@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
-import 'dart:async';
+import 'dart:io';
 
-import 'package:flutter/services.dart';
+import 'package:flutter/material.dart';
+import 'package:image_downloader/image_downloader.dart';
+
 import 'package:photo_editor_sdk/photo_editor_sdk.dart';
 
 void main() => runApp(MyApp());
@@ -17,26 +18,21 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    initPlatformState();
+    _openEditor();
   }
 
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    String platformVersion;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    try {
-      platformVersion = await PhotoEditorSdk.platformVersion;
-    } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
+  _openEditor() async {
+
+    var imageId = await ImageDownloader.downloadImage(
+        "https://raw.githubusercontent.com/wiki/ko2ic/image_downloader/images/flutter.png");
+    if (imageId == null) {
+      return;
     }
+    var path = await ImageDownloader.findPath(imageId);
+    var file = File(path);
 
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
+    PhotoEditorSdk.editImage(file).then((r) {
 
-    setState(() {
-      _platformVersion = platformVersion;
     });
   }
 
