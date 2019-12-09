@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:image_downloader/image_downloader.dart';
+//import 'package:image_downloader/image_downloader.dart';
 
 import 'package:photo_editor_sdk/photo_editor_sdk.dart';
 
@@ -23,17 +23,17 @@ class _MyAppState extends State<MyApp> {
 
   _openEditor() async {
 
-    var imageId = await ImageDownloader.downloadImage(
-        "https://raw.githubusercontent.com/wiki/ko2ic/image_downloader/images/flutter.png");
-    if (imageId == null) {
-      return;
-    }
-    var path = await ImageDownloader.findPath(imageId);
-    var file = File(path);
-
-    PhotoEditorSdk.editImage(file).then((r) {
-
-    });
+//    var imageId = await ImageDownloader.downloadImage(
+//        "https://raw.githubusercontent.com/wiki/ko2ic/image_downloader/images/flutter.png");
+//    if (imageId == null) {
+//      return;
+//    }
+//    var path = await ImageDownloader.findPath(imageId);
+//    var file = File(path);
+//
+//    PhotoEditorSdk.editImage(file).then((r) {
+//
+//    });
   }
 
   @override
