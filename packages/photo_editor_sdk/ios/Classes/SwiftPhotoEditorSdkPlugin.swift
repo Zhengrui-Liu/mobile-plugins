@@ -21,9 +21,17 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
         if (call.method == "editImage") {
             controller = UIApplication.shared.keyWindow?.rootViewController
             globalResult = result
-            let args : FlutterStandardTypedData = call.arguments as! FlutterStandardTypedData
-            let image : Photo = Photo(data: args.data)
-            self.presentPhotoEditViewController(photo: image)
+            // let args : FlutterStandardTypedData = call.arguments as! FlutterStandardTypedData
+            
+            do {
+                let url = URL(string: "https://ichef.bbci.co.uk/news/660/cpsprodpb/09C2/production/_95189420_plate-1968011_1920.jpg")!
+                let data = try Data(contentsOf: url)
+                let image2 = UIImage(data: data)!
+                let image = Photo(image: image2)
+                self.presentPhotoEditViewController(photo: image)
+            } catch {
+                print(error)
+            }
         }
     }
     private func presentPhotoEditViewController(photo: Photo) {
