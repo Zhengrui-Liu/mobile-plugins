@@ -1,15 +1,19 @@
-## 0.0.1
+## 0.1.1
 
-* Initial release.
+* Unnecessary permission removed 
 
-## 0.0.2
+## 0.1.0
 
-* Include POC project to project.
+* Now you can pass a string to PhotoEditorSdk.editImage method instead of a File instance
 
 ## 0.0.3
 
 * Update kotlin version for android crash on build.
 
-## 0.1.0
+## 0.0.2
 
-* Now you can pass a string to PhotoEditorSdk.editImage method instead of a File instance
+* Include POC project to project.
+
+## 0.0.1
+
+* Initial release.
