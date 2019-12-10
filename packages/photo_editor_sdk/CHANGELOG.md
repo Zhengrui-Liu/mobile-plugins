@@ -9,3 +9,7 @@
 ## 0.0.3
 
 * Update kotlin version for android crash on build.
+
+## 0.1.0
+
+* Now you can pass a string to PhotoEditorSdk.editImage method instead of a File instance
