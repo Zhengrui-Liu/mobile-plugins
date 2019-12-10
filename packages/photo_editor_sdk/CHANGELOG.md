@@ -1,3 +1,7 @@
+## 0.1.2
+
+* Files removed
+
 ## 0.1.1
 
 * Unnecessary permission removed 
