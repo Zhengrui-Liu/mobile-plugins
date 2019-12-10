@@ -7,7 +7,7 @@ class PhotoEditorSdk {
   static const MethodChannel _channel =
       const MethodChannel('photo_editor_sdk');
 
-  static Future editImage(File file) async {
-    return await _channel.invokeMethod('editImage'/*, file.readAsBytesSync()*/);
+  static Future editImage(String url) async {
+    return await _channel.invokeMethod('editImage', url);
   }
 }

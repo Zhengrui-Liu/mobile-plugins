@@ -22,7 +22,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   _openEditor() async {
-    PhotoEditorSdk.editImage(null).then((r) {
+    PhotoEditorSdk.editImage("https://images.carreirabeauty.com/uploads/feed/file/586bb563993a7a09230f8431/ahazou.jpg").then((r) {
 
     });
   }
