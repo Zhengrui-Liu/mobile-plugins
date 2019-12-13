@@ -1,3 +1,7 @@
+## 0.2.0
+
+* Logo and stickers added
+
 ## 0.1.2
 
 * Files removed
