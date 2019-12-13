@@ -98,8 +98,6 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
                 icon: UIImage(named: "imgly_icon_tool_sticker_48pt", in: Bundle.imglyBundle, compatibleWith: nil)!,
                 toolControllerClass: StickerToolController.self)!
         )
-        
-        
         let sticker = PhotoEditMenuItem.tool(ToolMenuItem(title: "adesivo", icon: UIImage(named: "imgly_icon_tool_sticker_48pt", in: Bundle.imglyBundle, compatibleWith: nil)!, toolControllerClass: StickerToolController.self)!)
         let text = PhotoEditMenuItem.tool(ToolMenuItem(title: "texto", icon: UIImage(named: "imgly_icon_tool_text_48pt", in: Bundle.imglyBundle, compatibleWith: nil)!, toolControllerClass: TextToolController.self)!)
         
@@ -112,14 +110,14 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
             builder.configurePhotoEditViewController { options in
                 options.menuItems = createDefaultItems()
                 
-                options.backgroundColor = UIColor.white
+                //options.backgroundColor = UIColor.white
                 options.actionButtonConfigurationClosure = { cell, action in
-                    cell.contentTintColor = UIColor(red: 121, green: 0, blue: 173, alpha: 1)
+                    cell.contentTintColor = UIColor(red: 121/255, green: 0, blue: 173/255, alpha: 1)
                 }
                 
-                options.applyButtonConfigurationClosure = { shareButton in
-                    shareButton.setImage(UIImage(named: "Share"), for: .normal)
-                }
+//                options.applyButtonConfigurationClosure = { shareButton in
+//                    shareButton.setImage(UIImage(named: "Share"), for: .normal)
+//                }
             }
             
             // Configure sticker tool
