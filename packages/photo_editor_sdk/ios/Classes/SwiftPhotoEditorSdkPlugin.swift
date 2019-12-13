@@ -12,13 +12,20 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
         if let licenseURL = Bundle.main.url(forResource: "license", withExtension: "") {
             PESDK.unlockWithLicense(at: licenseURL)
         }
+        self.translate()
         let channel = FlutterMethodChannel(name: "photo_editor_sdk", binaryMessenger: registrar.messenger())
         let instance = SwiftPhotoEditorSdkPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        if (call.method == "editImage") {
+        if( call.method == "addAllContents" ) {
+            let args = call.arguments as! Dictionary<String, Array<String>>
+            UserDefaults.standard.set(args["logos"], forKey: "logos")
+            UserDefaults.standard.set(args["stickers"], forKey: "stickers")
+        } else if (call.method == "editImage") {
+            setUpStickers()
+            
             controller = UIApplication.shared.keyWindow?.rootViewController
             globalResult = result
             let args = call.arguments as! String
@@ -44,6 +51,14 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
         
         // Create a photo edit view controller
         let photoEditViewController = PhotoEditViewController(photoAsset: photo, configuration: configuration, photoEditModel: photoEditModel)
+        
+        photoEditViewController.toolbar.backgroundColor = UIColor.white
+        photoEditViewController.toolbar.tintColor = UIColor.black
+        photoEditViewController.view.tintColor = UIColor.black
+        //        photoEditViewController.toolbarItems?.forEach { i in
+        //            i.color = UIColor.black
+        //        }
+        
         photoEditViewController.modalPresentationStyle = .fullScreen
         photoEditViewController.delegate = self
         
@@ -55,11 +70,11 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
             navigationController.popViewController(animated: true)
         } else {
             globalResult(data)
-
+            
             controller.dismiss(animated: true, completion: nil)
         }
     }
-
+    
     public func photoEditViewControllerDidFailToGeneratePhoto(_ photoEditViewController: PhotoEditViewController) {
         if let navigationController = photoEditViewController.navigationController {
             navigationController.popViewController(animated: true)
@@ -67,7 +82,7 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
             controller.dismiss(animated: true, completion: nil)
         }
     }
-
+    
     public func photoEditViewControllerDidCancel(_ photoEditViewController: PhotoEditViewController) {
         if let navigationController = photoEditViewController.navigationController {
             navigationController.popViewController(animated: true)
@@ -76,21 +91,35 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
         }
     }
     
+    func createDefaultItems() -> [PhotoEditMenuItem] {
+        let logo = PhotoEditMenuItem.tool(
+            ToolMenuItem(
+                title: "sua logo",
+                icon: UIImage(named: "imgly_icon_tool_sticker_48pt", in: Bundle.imglyBundle, compatibleWith: nil)!,
+                toolControllerClass: StickerToolController.self)!
+        )
+        
+        
+        let sticker = PhotoEditMenuItem.tool(ToolMenuItem(title: "adesivo", icon: UIImage(named: "imgly_icon_tool_sticker_48pt", in: Bundle.imglyBundle, compatibleWith: nil)!, toolControllerClass: StickerToolController.self)!)
+        let text = PhotoEditMenuItem.tool(ToolMenuItem(title: "texto", icon: UIImage(named: "imgly_icon_tool_text_48pt", in: Bundle.imglyBundle, compatibleWith: nil)!, toolControllerClass: TextToolController.self)!)
+        
+        return [logo, sticker, text]
+    }
+    
     private func buildConfiguration() -> Configuration {
         let configuration = Configuration { builder in
-            // Configure camera
-            builder.configureCameraViewController { options in
-                // Just enable photos
-                options.allowedRecordingModes = [.photo]
-                // Show cancel button
-                options.showCancelButton = true
-            }
-            
             // Configure editor
             builder.configurePhotoEditViewController { options in
-                var menuItems = PhotoEditMenuItem.defaultItems
-                menuItems.removeLast() // Remove last menu item ('Magic')
-                options.menuItems = menuItems
+                options.menuItems = createDefaultItems()
+                
+                options.backgroundColor = UIColor.white
+                options.actionButtonConfigurationClosure = { cell, action in
+                    cell.contentTintColor = UIColor(red: 121, green: 0, blue: 173, alpha: 1)
+                }
+                
+                options.applyButtonConfigurationClosure = { shareButton in
+                    shareButton.setImage(UIImage(named: "Share"), for: .normal)
+                }
             }
             
             // Configure sticker tool
@@ -106,8 +135,118 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
         return configuration
     }
     
+    fileprivate static func translate() {
+        PESDK.localizationDictionary = [
+            "pt": [
+                "No permission" : "Sem permissão",
+                "Top left cropping area" : "Área de corte superior esquerda",
+                "Settings" : "Configurações",
+                "No Focus" : "Sem Foco",
+                "Loading image" : "Carregando imagem...",
+                "Transform" : "Cortar",
+                "Free" : "Livre",
+                "Filter" : "Filtros",
+                "None" : "Nenhum",
+                "Adjust" : "Ajustes",
+                "Brightness" : "Brilho",
+                "Contrast" : "Contraste",
+                "Saturation" : "Saturação",
+                "Clarity" : "Claridade",
+                "Shadows" : "Sombras",
+                "Highlights" : "Destaques",
+                "Exposure" : "Exposição",
+                "Shapes" : "Formas",
+                "Sticker" : "Logo",
+                "Sticker Options" : "Opções do Sticker",
+                "Color" : "Cor",
+                "Sticker Color" : "Cor do Sticker",
+                "Flip" : "Inverter",
+                "To Front" : "Sobrepor",
+                "Text" : "Texto",
+                "Text Design" : "Texto",
+                "Add Text" : "Adicionar Texto",
+                "Change Text" : "Alterar Texto",
+                "Change Text Desing" : "Alterar Texto",
+                "Text Options" : "Opções do Texto",
+                "Font" : "Fonte",
+                "Text Color" : "Cor do Texto",
+                "BGColor" : "Fundo",
+                "Alignment" : "Alinhamento",
+                "Overlay" : "Sobreposição",
+                "Golden" : "Dourado",
+                "Lightleak" : "Feixe de luz",
+                "Rain" : "Chuva",
+                "Mosaic" : "Mosaico",
+                "Vintage" : "Vintage",
+                "Paper" : "Papel",
+                "Frame" : "Moldura",
+                "No Frame" : "Sem Moldura",
+                "Loading" : "Carregando",
+                "Brush" : "Pincel",
+                "Brush Color" : "Cor do Pincel",
+                "Size" : "Tamanho",
+                "Hardness" : "Rigidez",
+                "Focus" : "Foco",
+                "Magic" : "Auto",
+                "Discard changes?" : "Descartar alterações?",
+                "All changes will be lost." : "Todas as alterações serão perdidas.",
+                "Discard changes" : "Descartar alterações",
+                "Cancel" : "Cancelar",
+                "Saving image" : "Carregando..."
+            ]
+        ]
+    }
+    
+    fileprivate func setUpStickers() {
+        
+        // MARK: Shapes
+        if let last = StickerCategory.all.last {
+            let shapes = StickerCategory(title: "Formas", imageURL: last.imageURL, stickers: last.stickers)
+            StickerCategory.all.removeAll()
+            StickerCategory.all.append(shapes)
+        }
+        
+        // MARK: User logo & Facebook photos
+        var images: [Sticker] = []
+        
+        //        if let userOldLogo = userInfo!["logo_image_url"] as? String {
+        //            if let logoStickerURL = URL(string: userOldLogo) {
+        //                let logoSticker = Sticker(imageURL: logoStickerURL, thumbnailURL: nil, identifier: "UserLogo")
+        //                images.append(logoSticker)
+        //            }
+        //        }
+        //
+        
+        let defaults = UserDefaults.standard
+        let logos = defaults.array(forKey: "logos")
+        var cont = 0
+        logos?.forEach { logo in
+            if let logoURL = URL(string: logo as! String) {
+                let logoSticker = Sticker(imageURL: logoURL, thumbnailURL: nil, identifier: "\(cont)")
+                cont = cont+1
+                images.append(logoSticker)
+            }
+        }
+        
+        if !images.isEmpty {
+            
+            let logoStickerCategory = URL(string: "http://is3.mzstatic.com/image/thumb/Purple118/v4/f3/31/b8/f331b8c5-d637-d9d7-7466-d1eb79c70c3f/source/175x175bb.jpg")!
+            let stickerCategory = StickerCategory(title: "Logo", imageURL: logoStickerCategory, stickers: images)
+            
+            if !StickerCategory.all.contains(where: { (stickerCategory) -> Bool in
+                if stickerCategory.title == "logo" {
+                    return true
+                }
+                return false
+            }) {
+                StickerCategory.all.insert(stickerCategory, at: 0)
+            }
+        }
+        
+    }
+    
     private static let defaultTheme: Theme = {
-        return .dark
+        return .light
     }()
     
     private var theme = defaultTheme
