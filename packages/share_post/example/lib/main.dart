@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:share_post/share_post.dart';
+
+import 'package:http/http.dart' as http;
+
 
 void main() => runApp(MyApp());
 
@@ -13,6 +17,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
+  Image image;
 
   @override
   void initState() {
@@ -47,10 +52,41 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: Center(
-          child: Text('Running on: $_platformVersion\n'),
+        body: Column(
+          children: <Widget>[
+            Center(
+              child: Text('Running on: $_platformVersion\n'),
+            ),
+            RaisedButton(
+              child: Text('Compartilhar'),
+              onPressed: _onClick,
+            ),
+            image ?? Container()
+          ],
         ),
       ),
     );
   }
+
+  void _onClick() async {
+
+
+//    final facebookLogin = FacebookLogin();
+//    final result = await facebookLogin.logIn(["email", "pages_show_list",
+//      "publish_pages", "manage_pages", "public_profile"]);
+//
+//     var pgs = await SharePost.getFacebookUserPages();
+//    var pgs = await SharePost.getFacebookUser();
+
+
+
+    await SharePost.shareOnFacebookPage(
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTYZqQeg5UFJJC6MvvBPkjTJNdnABMY1RZM6e__-K1eiCLIxUVm"
+    );
+
+    String a = "";
+
+  }
+
+
 }
