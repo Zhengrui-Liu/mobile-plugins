@@ -21,15 +21,19 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate {
         case "getFacebookUserPages":
             getFacebookUserPages(result: result)
             break
-        case "shareOnFacebookProfile":
-            let args = call.arguments as! Dictionary<String, String>
-            let url: String = args["url"]!
-            shareOnFacebookProfile(url: url, result: result)
-            break
-        case "shareOnFacebookPage":
-            let args = call.arguments as! Dictionary<String, String>
-            let url: String = args["url"]!
-            shareOnFacebookPage(url: url, result: result)
+//        case "shareOnFacebookProfile":
+//            let args = call.arguments as! Dictionary<String, String>
+//            let url: String = args["url"]!
+//            shareOnFacebookProfile(url: url, result: result)
+//            break
+        case "shareOnFacebook":
+            let args = call.arguments as! Dictionary<String, Any>
+            let url: String = args["url"] as! String
+            let message: String = args["message"] as! String
+            let accessToken: String = args["accessToken"] as! String
+            let time: NSNumber? = args["time"] as? NSNumber ?? nil
+            let facebookId: String = args["facebookId"] as! String
+            shareOnFacebookPage(url: url, message: message, accessToken: accessToken, time: time, facebookId: facebookId, result: result)
             break
         default:
             result(FlutterError(code: "METHOD_NOT_FOUND", message: "Method not found", details: nil))
@@ -65,44 +69,50 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate {
         }
     }
     
-    private func shareOnFacebookPage(url: String, result: @escaping FlutterResult) {
-        let url = URL(string: url)!
-        let data = try? Data(contentsOf: url)
-        let photo = UIImage(data: data!)!
+    private func shareOnFacebookPage(url: String, message: String, accessToken: String?,
+                                     time: NSNumber?, facebookId: String, result: @escaping FlutterResult) {
+//        let url = URL(string: url)!
+//        let data = try? Data(contentsOf: url)
+//        let photo = UIImage(data: data!)!
         var dict: [String:Any] = [:]
-        dict["access_token"] = "EAAFrmTrE3MABALwe404TYxIZADTSc4qoSKj6Txmo9R4ZBVIYdrW0eIwm3KuDXLFTZBZBhoGiKBUcK5xpsZBZC7MFNqu1CDBhPl0XpUut8IWFC6gRJow6RxZCYxJx8BwseyuXLaNreCV5ZA35o5olWXwm8TAvEdxZCjncT2yi2EwtTOgZDZD"
-        dict["image"] = photo
-        dict["message"] = "huehue"
-        
+        dict["url"] = url
+        dict["message"] = message
+        // dict["access_token"] = accessToken
+
         // scheduled post
-        dict["scheduled_publish_time"] = 1577145600
-        dict["published"] = "false"
+        if( time != nil ) {
+            dict["scheduled_publish_time"] = time
+            dict["published"] = "false"
+        }
         
-        let fbId = "233753760362842"
-        let graphPath = "\(fbId)/photos"
+        // posting in a profile
+        var graphPath = "/\(facebookId)/photos"
+        if( accessToken == nil ) {
+            graphPath = "/me"
+        }
         
         let request = GraphRequest(graphPath: graphPath, parameters: dict,  httpMethod: HTTPMethod.post)
         request.start(completionHandler: {(_ connection, _ values, _ error) in
-            
-            let a = ""
+            result("OK")
         })
+        
     }
     
-    private func shareOnFacebookProfile(url: String, result: @escaping FlutterResult) {
-        let url = URL(string: url)!
-        let data = try? Data(contentsOf: url)
-        let img = UIImage(data: data!)!
-        let photo = SharePhoto(image: img, userGenerated: true)
-        let content = SharePhotoContent()
-        content.photos = [photo]
-        
-        let showDialog = ShareDialog(fromViewController: UIApplication.shared.keyWindow?.rootViewController, content: content, delegate: self)
-        if (showDialog.canShow) {
-            showDialog.show()
-        } else {
-            result(FlutterError(code: "FACEBOOK_APP_NOT_FOUND", message: "Facebook app not found", details: nil))
-        }
-    }
+//    private func shareOnFacebookProfile(url: String, result: @escaping FlutterResult) {
+//        let url = URL(string: url)!
+//        let data = try? Data(contentsOf: url)
+//        let img = UIImage(data: data!)!
+//        let photo = SharePhoto(image: img, userGenerated: true)
+//        let content = SharePhotoContent()
+//        content.photos = [photo]
+//
+//        let showDialog = ShareDialog(fromViewController: UIApplication.shared.keyWindow?.rootViewController, content: content, delegate: self)
+//        if (showDialog.canShow) {
+//            showDialog.show()
+//        } else {
+//            result(FlutterError(code: "FACEBOOK_APP_NOT_FOUND", message: "Facebook app not found", details: nil))
+//        }
+//    }
     
     public func sharer(_ sharer: Sharing, didCompleteWithResults results: [String : Any]) {
         

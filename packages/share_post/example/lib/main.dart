@@ -70,19 +70,19 @@ class _MyAppState extends State<MyApp> {
 
   void _onClick() async {
 
-
 //    final facebookLogin = FacebookLogin();
 //    final result = await facebookLogin.logIn(["email", "pages_show_list",
-//      "publish_pages", "manage_pages", "public_profile"]);
-//
-//     var pgs = await SharePost.getFacebookUserPages();
-//    var pgs = await SharePost.getFacebookUser();
+//      "publish_pages", /*"manage_pages", */"public_profile"]);
+
+    var page = await SharePost.getFacebookUserPages();
+    var user = await SharePost.getFacebookUser();
 
 
+    var map = page.first;
+    String token = map["access_token"];
 
-    await SharePost.shareOnFacebookPage(
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTYZqQeg5UFJJC6MvvBPkjTJNdnABMY1RZM6e__-K1eiCLIxUVm"
-    );
+    await SharePost.shareOnFacebook("https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTYZqQeg5UFJJC6MvvBPkjTJNdnABMY1RZM6e__-K1eiCLIxUVm",
+        "message here", token, null, map["id"]);
 
     String a = "";
 

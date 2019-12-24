@@ -31,27 +31,21 @@ class SharePost {
     return result;
   }
 
-  static Future<String> shareOnFacebookPage(String url) async {
+  static Future<String> shareOnFacebook(String url, String message,
+      String accessToken, int time, String facebookId) async {
     final Map<String, Object> arguments = Map<String, dynamic>();
     arguments.putIfAbsent('url', () => url);
+    arguments.putIfAbsent('message', () => message);
+    arguments.putIfAbsent('accessToken', () => accessToken);
+    arguments.putIfAbsent('time', () => time);
+    arguments.putIfAbsent('facebookId', () => facebookId);
     dynamic result;
     try {
-      result = await _channel.invokeMethod('shareOnFacebookPage', arguments);
+      result = await _channel.invokeMethod('shareOnFacebook', arguments);
     } catch (e) {
       return "false";
     }
     return result;
   }
 
-  static Future<String> shareOnFacebookProfile(String url) async {
-    final Map<String, Object> arguments = Map<String, dynamic>();
-    arguments.putIfAbsent('url', () => url);
-    dynamic result;
-    try {
-      result = await _channel.invokeMethod('shareOnFacebookProfile', arguments);
-    } catch (e) {
-      return "false";
-    }
-    return result;
-  }
 }
