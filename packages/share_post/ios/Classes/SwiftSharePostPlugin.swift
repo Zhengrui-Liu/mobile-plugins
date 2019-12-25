@@ -77,7 +77,7 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate {
         var dict: [String:Any] = [:]
         dict["url"] = url
         dict["message"] = message
-        // dict["access_token"] = accessToken
+        dict["access_token"] = accessToken
 
         // scheduled post
         if( time != nil ) {
@@ -86,12 +86,12 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate {
         }
         
         // posting in a profile
-        var graphPath = "/\(facebookId)/photos"
+        var graphPath = "\(facebookId)/photos"
         if( accessToken == nil ) {
             graphPath = "/me"
         }
         
-        let request = GraphRequest(graphPath: graphPath, parameters: dict,  httpMethod: HTTPMethod.post)
+        let request = GraphRequest(graphPath: graphPath, parameters: dict, tokenString: accessToken, version: "v5.0", httpMethod: HTTPMethod.post)
         request.start(completionHandler: {(_ connection, _ values, _ error) in
             result("OK")
         })
