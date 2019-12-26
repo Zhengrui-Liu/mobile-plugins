@@ -7,7 +7,6 @@ import 'package:share_post/share_post.dart';
 
 import 'package:http/http.dart' as http;
 
-
 void main() => runApp(MyApp());
 
 class MyApp extends StatefulWidget {
@@ -77,15 +76,15 @@ class _MyAppState extends State<MyApp> {
     var page = await SharePost.getFacebookUserPages();
     var user = await SharePost.getFacebookUser();
 
-
     var map = page.first;
     String token = map["access_token"];
 
-    await SharePost.shareOnFacebook("https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTYZqQeg5UFJJC6MvvBPkjTJNdnABMY1RZM6e__-K1eiCLIxUVm",
-        "message here", token, null, map["id"]);
-
-    String a = "";
-
+    await SharePost.shareOnFacebook(
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTYZqQeg5UFJJC6MvvBPkjTJNdnABMY1RZM6e__-K1eiCLIxUVm",
+        "message here",
+        token, null,
+        map["id"]
+    );
   }
 
 

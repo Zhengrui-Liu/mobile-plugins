@@ -1,8 +1,8 @@
 name: share_post
-description: A new Flutter Plugin project.
+description: A Flutter Share project.
 version: 0.0.1
-author:
-homepage:
+author: Ahazou Team <marcos@ahazou.com>
+homepage: https://github.com/ahazou/mobile-plugins/tree/master/packages/share_post
 
 environment:
   sdk: ">=2.1.0 <3.0.0"

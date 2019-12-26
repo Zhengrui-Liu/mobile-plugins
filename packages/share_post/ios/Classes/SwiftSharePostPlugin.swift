@@ -21,11 +21,6 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate {
         case "getFacebookUserPages":
             getFacebookUserPages(result: result)
             break
-//        case "shareOnFacebookProfile":
-//            let args = call.arguments as! Dictionary<String, String>
-//            let url: String = args["url"]!
-//            shareOnFacebookProfile(url: url, result: result)
-//            break
         case "shareOnFacebook":
             let args = call.arguments as! Dictionary<String, Any>
             let url: String = args["url"] as! String
@@ -71,9 +66,6 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate {
     
     private func shareOnFacebookPage(url: String, message: String, accessToken: String?,
                                      time: NSNumber?, facebookId: String, result: @escaping FlutterResult) {
-//        let url = URL(string: url)!
-//        let data = try? Data(contentsOf: url)
-//        let photo = UIImage(data: data!)!
         var dict: [String:Any] = [:]
         dict["url"] = url
         dict["message"] = message

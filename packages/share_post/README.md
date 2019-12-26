@@ -1,6 +1,6 @@
 # share_post
 
-A new Flutter Plugin project.
+A Flutter Share plugin.
 
 ## Getting Started
 
