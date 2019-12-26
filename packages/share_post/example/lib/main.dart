@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:share_post/share_post.dart';
-
-import 'package:http/http.dart' as http;
 
 void main() => runApp(MyApp());
 
