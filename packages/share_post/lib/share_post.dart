@@ -11,7 +11,7 @@ class SharePost {
   }
 
   static Future<Map<dynamic, dynamic>> getFacebookUser() async {
-    dynamic result;
+    Map<dynamic, dynamic> result;
     try {
       result = await _channel.invokeMethod('getFacebookUser');
     } catch (e) {
@@ -21,7 +21,7 @@ class SharePost {
   }
 
   static Future<List<Map<dynamic, dynamic>>> getFacebookUserPages() async {
-    dynamic result;
+    List<Map<dynamic, dynamic>> result;
     try {
       result = await _channel.invokeMethod('getFacebookUserPages');
     } catch (e) {
