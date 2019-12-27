@@ -1,3 +1,7 @@
+## 0.0.7
+
+* Change return of the method.
+
 ## 0.0.6
 
 * Change return of the method.
