@@ -1,3 +1,7 @@
+## 0.0.4
+
+* Type return changed.
+
 ## 0.0.3
 
 * Methods return change.
