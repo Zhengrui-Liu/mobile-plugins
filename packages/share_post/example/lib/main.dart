@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:share_post/share_post.dart';
+import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 
 void main() => runApp(MyApp());
 
@@ -69,11 +70,10 @@ class _MyAppState extends State<MyApp> {
 //    final facebookLogin = FacebookLogin();
 //    final result = await facebookLogin.logIn(["email", "pages_show_list",
 //      "publish_pages", "manage_pages", "public_profile"]);
-
     var page = await SharePost.getFacebookUserPages();
     var user = await SharePost.getFacebookUser();
 
-    var map = page.first;
+    var map = user;
     String token = map["access_token"];
 
     await SharePost.shareOnFacebook(

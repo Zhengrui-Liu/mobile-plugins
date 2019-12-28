@@ -1,3 +1,7 @@
+## 0.1.0
+
+* Posting for single user implemented
+
 ## 0.0.7
 
 * Change return of the method.
