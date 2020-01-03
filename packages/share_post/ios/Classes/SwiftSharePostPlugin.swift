@@ -132,7 +132,7 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
             showDialog.show()
             result("POST_SENT")
         } else {
-            result(FlutterError(code: "FACEBOOK_APP_NOT_FOUND", message: "Facebook app not found", details: nil))
+            result(FlutterError(code: "APP_NOT_FOUND", message: "Facebook app not found", details: nil))
         }
     }
     
@@ -155,7 +155,7 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
             UIApplication.shared.openURL(app)
             result("POST_SENT")
         } else {
-            result(FlutterError(code: "INSTAGRAM_APP_NOT_FOUND", message: "Instagram app not found", details: nil))
+            result(FlutterError(code: "APP_NOT_FOUND", message: "Instagram app not found", details: nil))
         }
     }
     
@@ -175,7 +175,7 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
             UIApplication.shared.keyWindow?.rootViewController?.present(documentsController, animated: true, completion: nil)
             result("POST_SENT")
         } else {
-            result(FlutterError(code: "INSTAGRAM_APP_NOT_FOUND", message: "Instagram app not found", details: nil))
+            result(FlutterError(code: "APP_NOT_FOUND", message: "Instagram app not found", details: nil))
         }
         
         
@@ -224,7 +224,7 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
             UIApplication.shared.keyWindow?.rootViewController?.present(documentsController, animated: true, completion: nil)
             result("POST_SENT")
         } else {
-            result(FlutterError(code: "WHATSAPP_APP_NOT_FOUND", message: "WhatsApp app not found", details: nil))
+            result(FlutterError(code: "APP_NOT_FOUND", message: "WhatsApp app not found", details: nil))
         }
         
         //let urlWhats = app

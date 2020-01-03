@@ -1,3 +1,7 @@
+## 0.3.1
+
+* Const app not found change
+
 ## 0.3.0
 
 * New modes to shares added
