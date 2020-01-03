@@ -36,6 +36,11 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
         case "shareStoryOnInstagram" :
             let args = call.arguments as! Dictionary<String, Any>
             let url: String = args["url"] as! String
+            shareStoryOnInstagram(url: url, result: result)
+            break
+        case "sharePostOnInstagram" :
+            let args = call.arguments as! Dictionary<String, Any>
+            let url: String = args["url"] as! String
             sharePostOnInstagram(url: url, result: result)
             break
         case "shareOnWhatsapp" :

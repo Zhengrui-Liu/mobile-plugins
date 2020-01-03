@@ -60,6 +60,19 @@ class SharePost {
     return result;
   }
 
+  static Future<String> sharePostOnInstagram(String url, String message) async {
+    final Map<String, Object> arguments = Map<String, dynamic>();
+    arguments.putIfAbsent('url', () => url);
+    arguments.putIfAbsent('message', () => message);
+    dynamic result;
+    try {
+      result = await _channel.invokeMethod('sharePostOnInstagram', arguments);
+    } catch (e) {
+      return null;
+    }
+    return result;
+  }
+
   static Future<String> shareOnWhatsapp(String url, String message) async {
     final Map<String, Object> arguments = Map<String, dynamic>();
     arguments.putIfAbsent('url', () => url);

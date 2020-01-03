@@ -1,3 +1,7 @@
+## 0.2.2
+
+* Adding code to call Instagram share
+
 ## 0.2.1
 
 * Re-write swift switch
