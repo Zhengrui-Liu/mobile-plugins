@@ -1,3 +1,7 @@
+## 0.2.0
+
+* Instagram and Whatsapp share
+
 ## 0.1.0
 
 * Posting for single user implemented
