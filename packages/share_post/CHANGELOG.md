@@ -1,3 +1,7 @@
+## 0.2.1
+
+* Re-write swift switch
+
 ## 0.2.0
 
 * Instagram and Whatsapp share
