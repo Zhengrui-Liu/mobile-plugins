@@ -83,12 +83,12 @@ class _MyAppState extends State<MyApp> {
 //        map["id"]
 //    );
 
-//    String a = await SharePost.shareStoryOnInstagram(
+//    String a = await SharePost.shareOnWhatsappBusiness(
 //        "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcRdezBUdWFUbArwZCmQq7_nJNqEcK_02k9laUugbomQV5wtbhHz",
 //        "message"
 //    );
 
-    SharePost.openAppOnStore(SharePost.INSTAGRAM);
+//    SharePost.openAppOnStore(SharePost.INSTAGRAM);
 
   }
 

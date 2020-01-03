@@ -1,3 +1,7 @@
+## 0.3.2
+
+* Business added
+
 ## 0.3.1
 
 * Const app not found change
