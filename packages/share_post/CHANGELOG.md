@@ -1,3 +1,7 @@
+## 0.3.0
+
+* New modes to shares added
+
 ## 0.2.2
 
 * Adding code to call Instagram share

@@ -46,12 +46,22 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
         case "shareOnWhatsapp" :
             let args = call.arguments as! Dictionary<String, Any>
             let url: String = args["url"] as! String
-            shareOnWhatsapp(url: url, result: result)
+            shareOnWhatsapp(url: url, app: "whatsapp://app", result: result)
             break
         case "shareOnWhatsappBusiness" :
             let args = call.arguments as! Dictionary<String, Any>
             let url: String = args["url"] as! String
-            shareOnWhatsapp(url: url, result: result)
+            shareOnWhatsapp(url: url, app: "whatsapp://app", result: result)
+            break
+        case "openAppOnStore" :
+            let args = call.arguments as! Dictionary<String, Any>
+            let appUrl: String = args["appUrl"] as! String
+            openAppOnStore(appUrl: appUrl)
+            break
+        case "shareOnNative" :
+            let args = call.arguments as! Dictionary<String, Any>
+            let url: String = args["url"] as! String
+            shareOnNative(url: url, result: result)
             break
         default:
             result(FlutterError(code: "METHOD_NOT_FOUND", message: "Method not found", details: nil))
@@ -120,6 +130,7 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
         let showDialog = ShareDialog(fromViewController: UIApplication.shared.keyWindow?.rootViewController, content: content, delegate: self)
         if (showDialog.canShow) {
             showDialog.show()
+            result("POST_SENT")
         } else {
             result(FlutterError(code: "FACEBOOK_APP_NOT_FOUND", message: "Facebook app not found", details: nil))
         }
@@ -142,8 +153,9 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
                 UIPasteboard.general.items = pasteBoardItems
             }
             UIApplication.shared.openURL(app)
+            result("POST_SENT")
         } else {
-            result(FlutterError(code: "INSTAGRAM_APP_NOT_FOUND", message: "Facebook app not found", details: nil))
+            result(FlutterError(code: "INSTAGRAM_APP_NOT_FOUND", message: "Instagram app not found", details: nil))
         }
     }
     
@@ -161,68 +173,86 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
                                                           .assignToContact, .saveToCameraRoll, .addToReadingList,
                                                           .postToFlickr, .postToVimeo, .postToTencentWeibo, .airDrop]
             UIApplication.shared.keyWindow?.rootViewController?.present(documentsController, animated: true, completion: nil)
+            result("POST_SENT")
         } else {
-            result(FlutterError(code: "INSTAGRAM_APP_NOT_FOUND", message: "Facebook app not found", details: nil))
+            result(FlutterError(code: "INSTAGRAM_APP_NOT_FOUND", message: "Instagram app not found", details: nil))
         }
         
         
-        //                let urlImage = URL(string: url)!
-        //                let data = try? Data(contentsOf: urlImage)
-        //                let photo = UIImage(data: data!)!
+        //let urlImage = URL(string: url)!
+        //let data = try? Data(contentsOf: urlImage)
+        //let photo = UIImage(data: data!)!
         //
-        //                let instagramURL = URL(string: "instagram://app")!
+        //let instagramURL = URL(string: "instagram://app")!
         //
-        //                if UIApplication.shared.canOpenURL(instagramURL) {
-        //                    let imageData = photo.jpegData(compressionQuality: 1.0)!
+        //if UIApplication.shared.canOpenURL(instagramURL) {
+        //    let imageData = photo.jpegData(compressionQuality: 1.0)!
         //
-        //                    let writePath = URL(fileURLWithPath: NSTemporaryDirectory() as String).appendingPathComponent("instagram.ig")
+        //    let writePath = URL(fileURLWithPath: NSTemporaryDirectory() as String).appendingPathComponent("instagram.ig")
         //
-        //                    do {
-        //                        try imageData.write(to: writePath, options: .atomic)
-        //                        let documentsInteractionsController = UIDocumentInteractionController(url: writePath)
-        //                        documentsInteractionsController.delegate = self
-        //                        documentsInteractionsController.uti = writePath.uti
-        //                        documentsInteractionsController.presentOpenInMenu(from: CGRect.zero,
-        //                                                                          in: (UIApplication.shared.keyWindow?.rootViewController!.view)!,
-        //                                                                          animated: true)
-        //
-        //
-        //                    } catch {
-        //                        return
-        //                    }
+        //    do {
+        //        try imageData.write(to: writePath, options: .atomic)
+        //        let documentsInteractionsController = UIDocumentInteractionController(url: writePath)
+        //        documentsInteractionsController.delegate = self
+        //        documentsInteractionsController.uti = writePath.uti
+        //        documentsInteractionsController.presentOpenInMenu(from: CGRect.zero,
+        //                                                          in: (UIApplication.shared.keyWindow?.rootViewController!.view)!,
+        //                                                          animated: true)
         //
         //
-        //                }
+        //    } catch {
+        //        return
+        //    }
         //
+        //
+        //}
     }
     
-    func shareOnWhatsapp(url: String, result: @escaping FlutterResult) {
-        let urlWhats = "whatsapp://app"
-        if let urlString = urlWhats.addingPercentEncoding(withAllowedCharacters:CharacterSet.urlQueryAllowed) {
-            if let whatsappURL = URL(string: urlString) {
-                
-                if UIApplication.shared.canOpenURL(whatsappURL as URL) {
-                    
-                    if let image = UIImage(named: "fastfood.jpg") {
-                        if let imageData = image.jpegData(compressionQuality: 1.0) {
-                            let tempFile = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Documents/whatsAppTmp.wai")
-                            do {
-                                try imageData.write(to: tempFile, options: .atomic)
-                                let documentInteractionController = UIDocumentInteractionController(url: tempFile)
-                                documentInteractionController.uti = "public.url"
-                                documentInteractionController.presentOpenInMenu(from: CGRect.zero, in: (UIApplication.shared.keyWindow?.rootViewController!.view)!, animated: true)
-                                
-                            } catch {
-                                print(error)
-                            }
-                        }
-                    }
-                    
-                } else {
-                    // Cannot open whatsapp
-                }
-            }
+    func shareOnWhatsapp(url: String, app: String, result: @escaping FlutterResult) {
+        let app = URL(string: app)!
+        if UIApplication.shared.canOpenURL(app){
+            let urlImage = URL(string: url)!
+            let data = try? Data(contentsOf: urlImage)
+            let photo = UIImage(data: data!)!
+            
+            let documentsController = UIActivityViewController.init(activityItems: [photo], applicationActivities: nil)
+            
+            documentsController.excludedActivityTypes = [ .postToFacebook, .postToTwitter, .postToWeibo,
+                                                          .message, .mail, .print, .copyToPasteboard,
+                                                          .assignToContact, .saveToCameraRoll, .addToReadingList,
+                                                          .postToFlickr, .postToVimeo, .postToTencentWeibo, .airDrop]
+            UIApplication.shared.keyWindow?.rootViewController?.present(documentsController, animated: true, completion: nil)
+            result("POST_SENT")
+        } else {
+            result(FlutterError(code: "WHATSAPP_APP_NOT_FOUND", message: "WhatsApp app not found", details: nil))
         }
+        
+        //let urlWhats = app
+        //if let urlString = urlWhats.addingPercentEncoding(withAllowedCharacters:CharacterSet.urlQueryAllowed) {
+        //    if let whatsappURL = URL(string: urlString) {
+        //
+        //        if UIApplication.shared.canOpenURL(whatsappURL as URL) {
+        //
+        //            if let image = UIImage(named: "fastfood.jpg") {
+        //                if let imageData = image.jpegData(compressionQuality: 1.0) {
+        //                    let tempFile = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Documents/whatsAppTmp.wai")
+        //                    do {
+        //                        try imageData.write(to: tempFile, options: .atomic)
+        //                        let documentInteractionController = UIDocumentInteractionController(url: tempFile)
+        //                        documentInteractionController.uti = "public.url"
+        //                        documentInteractionController.presentOpenInMenu(from: CGRect.zero, in: (UIApplication.shared.keyWindow?.rootViewController!.view)!, animated: true)
+        //
+        //                    } catch {
+        //                        print(error)
+        //                    }
+        //                }
+        //            }
+        //
+        //        } else {
+        //            // Cannot open whatsapp
+        //        }
+        //    }
+        //}
     }
     
     func shareOnNative(url: String, result: @escaping FlutterResult) {
@@ -232,6 +262,11 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
         let documentsController = UIActivityViewController.init(activityItems: [photo], applicationActivities: nil)
         documentsController.excludedActivityTypes = [ .postToFacebook ]
         UIApplication.shared.keyWindow?.rootViewController?.present(documentsController, animated: true, completion: nil)
+    }
+    
+    func openAppOnStore(appUrl: String) {
+        let app = URL(string: appUrl)!
+        UIApplication.shared.openURL(app)
     }
     
     public func sharer(_ sharer: Sharing, didCompleteWithResults results: [String : Any]) {
