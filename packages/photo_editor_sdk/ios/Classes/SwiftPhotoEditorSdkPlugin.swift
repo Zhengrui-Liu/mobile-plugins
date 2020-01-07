@@ -20,9 +20,10 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         if( call.method == "addAllContents" ) {
-            let args = call.arguments as! Dictionary<String, Array<String>>
-            UserDefaults.standard.set(args["logos"], forKey: "logos")
-            UserDefaults.standard.set(args["stickers"], forKey: "stickers")
+            if let args = call.arguments as? Dictionary<String, Array<String>> {
+                UserDefaults.standard.set(args["logos"], forKey: "logos")
+                UserDefaults.standard.set(args["stickers"], forKey: "stickers")
+            }
         } else if (call.method == "editImage") {
             setUpStickers()
             
