@@ -1,3 +1,7 @@
+## 0.3.3
+
+* Safe logos and wpp-bs validation removed
+
 ## 0.3.2
 
 * Business added
