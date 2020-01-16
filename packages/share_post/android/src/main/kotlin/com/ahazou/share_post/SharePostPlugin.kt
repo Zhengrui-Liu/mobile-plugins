@@ -56,42 +56,99 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
   override fun onDetachedFromActivityForConfigChanges() {
   }
 
+  /*
+   switch call.method {
+        case "getFacebookUser":
+            getFacebookUser(result: result)
+            break
+        case "getFacebookUserPages":
+            getFacebookUserPages(result: result)
+            break
+        case "shareOnFacebook":
+            let args = call.arguments as! Dictionary<String, Any>
+            let url: String = args["url"] as! String
+            let message: String = args["message"] as! String
+            let accessToken: String? = args["accessToken"] as? String ?? nil
+            let time: NSNumber? = args["time"] as? NSNumber ?? nil
+            let facebookId: String = args["facebookId"] as! String
+            if( accessToken == nil ) {
+                shareOnFacebookProfile(url: url, result: result)
+            } else {
+                shareOnFacebookPage(url: url, message: message, accessToken: accessToken, time: time, facebookId: facebookId, result: result)
+            }
+            break
+        case "shareStoryOnInstagram" :
+            let args = call.arguments as! Dictionary<String, Any>
+            let url: String = args["url"] as! String
+            shareStoryOnInstagram(url: url, result: result)
+            break
+        case "sharePostOnInstagram" :
+            let args = call.arguments as! Dictionary<String, Any>
+            let url: String = args["url"] as! String
+            sharePostOnInstagram(url: url, result: result)
+            break
+        case "shareOnWhatsapp" :
+            let args = call.arguments as! Dictionary<String, Any>
+            let url: String = args["url"] as! String
+            shareOnWhatsapp(url: url, app: "whatsapp://app", result: result)
+            break
+        case "shareOnWhatsappBusiness" :
+            let args = call.arguments as! Dictionary<String, Any>
+            let url: String = args["url"] as! String
+            shareOnWhatsapp(url: url, app: "whatsapp://app", result: result)
+            break
+        case "openAppOnStore" :
+            let args = call.arguments as! Dictionary<String, Any>
+            let appUrl: String = args["appUrl"] as! String
+            openAppOnStore(appUrl: appUrl)
+            break
+        case "shareOnNative" :
+            let args = call.arguments as! Dictionary<String, Any>
+            let url: String = args["url"] as! String
+            shareOnNative(url: url, result: result)
+            break
+        default:
+            result(FlutterError(code: "METHOD_NOT_FOUND", message: "Method not found", details: nil))
+        }
+  */
+
+
+
   override fun onMethodCall(call: MethodCall, result: Result) {
     when ( call.method ) {
       "getPlatformVersion" -> result.success("Android ${android.os.Build.VERSION.RELEASE}")
-      "isLoggedInWithFacebook" -> result.success(isLoggedInWithFacebook())
-      "getFacebookUserPages" -> result.success(getFacebookUserPages())
-      "shareFacebook" -> shareFacebook(
-              urlImage = call.argument<String>("urlImage")!!, result = result)
+      "getFacebookUser" -> result.notImplemented()
+      "getFacebookUserPages" -> getFacebookUserPages(result)
+      "shareOnFacebook" -> result.notImplemented()
+      "shareStoryOnInstagram" -> result.notImplemented()
+      "sharePostOnInstagram" -> result.notImplemented()
+      "shareOnWhatsapp" -> result.notImplemented()
+      "shareOnWhatsappBusiness" -> result.notImplemented()
+      "openAppOnStore" -> result.notImplemented()
+      "shareOnNative" -> result.notImplemented()
       else -> result.notImplemented()
     }
   }
 
-  private fun isLoggedInWithFacebook(): Boolean {
-    val accessToken = AccessToken.getCurrentAccessToken()
-    return accessToken != null
-  }
-
-  private fun getFacebookUserPages(): String {
+  private fun getFacebookUserPages(result: Result) {
     if (isLoggedInWithFacebook()) {
       val profile = Profile.getCurrentProfile()
       val parameters = Bundle()
-      parameters.putString("fields", "id,name")
-
+      parameters.putString("fields", "id,name,access_token")
       GraphRequest(
               AccessToken.getCurrentAccessToken(),
               "/" + profile.id + "/accounts",
               parameters,
               HttpMethod.GET
       ) { response ->
-
-        val a = ""
-
+        result.success(response.jsonObject.get("data"))
       }.executeAsync()
-
     }
+  }
 
-    return "true"
+  private fun isLoggedInWithFacebook(): Boolean {
+    val accessToken = AccessToken.getCurrentAccessToken()
+    return accessToken != null
   }
 
   private fun shareFacebook(urlImage: String, result: Result) {

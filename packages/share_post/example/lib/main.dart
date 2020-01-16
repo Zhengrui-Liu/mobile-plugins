@@ -70,10 +70,10 @@ class _MyAppState extends State<MyApp> {
 //    final facebookLogin = FacebookLogin();
 //    final result = await facebookLogin.logIn(["email", "pages_show_list",
 //      "publish_pages", "manage_pages", "public_profile"]);
-//    var page = await SharePost.getFacebookUserPages();
+    var page = await SharePost.getFacebookUserPages();
 //    var user = await SharePost.getFacebookUser();
 //
-//    var map = user;
+    var map = page;
 //    String token = map["access_token"];
 //
 //    await SharePost.shareOnFacebook(
