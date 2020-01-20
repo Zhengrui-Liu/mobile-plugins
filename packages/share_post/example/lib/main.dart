@@ -71,17 +71,19 @@ class _MyAppState extends State<MyApp> {
 //    final result = await facebookLogin.logIn(["email", "pages_show_list",
 //      "publish_pages", "manage_pages", "public_profile"]);
     var page = await SharePost.getFacebookUserPages();
+
 //    var user = await SharePost.getFacebookUser();
 //
-    var map = page;
-//    String token = map["access_token"];
-//
-//    await SharePost.shareOnFacebook(
-//        "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTYZqQeg5UFJJC6MvvBPkjTJNdnABMY1RZM6e__-K1eiCLIxUVm",
-//        "message here",
-//        token, null,
-//        map["id"]
-//    );
+    var map = page.first;
+    var token = map["access_token"];
+
+
+    await SharePost.shareOnFacebook(
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTYZqQeg5UFJJC6MvvBPkjTJNdnABMY1RZM6e__-K1eiCLIxUVm",
+        "message here",
+        token, null,
+        map["id"]
+    );
 
 //    String a = await SharePost.shareOnWhatsappBusiness(
 //        "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcRdezBUdWFUbArwZCmQq7_nJNqEcK_02k9laUugbomQV5wtbhHz",
