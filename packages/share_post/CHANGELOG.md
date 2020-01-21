@@ -1,3 +1,7 @@
+## 0.4.1
+
+* Native share OK
+
 ## 0.4.0
 
 * Sharing in Android devices

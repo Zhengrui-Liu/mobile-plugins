@@ -84,7 +84,7 @@ class _MyAppState extends State<MyApp> {
 //        token, null,
 //        m
 
-    await SharePost.sharePostOnInstagram(
+    await SharePost.shareOnNative(
       "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTYZqQeg5UFJJC6MvvBPkjTJNdnABMY1RZM6e__-K1eiCLIxUVm",
       "message here",
     );

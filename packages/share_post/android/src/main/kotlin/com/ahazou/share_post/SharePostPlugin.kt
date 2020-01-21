@@ -23,10 +23,18 @@ import java.net.URL
 import androidx.core.content.ContextCompat.startActivity
 import android.content.Intent
 import android.content.ActivityNotFoundException
+import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Environment
+import android.provider.MediaStore
 import android.text.TextUtils
 import androidx.core.content.FileProvider
 import com.facebook.appevents.ml.Utils
+import com.squareup.picasso.Picasso
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
 import java.lang.Exception
 import java.util.ArrayList
 
@@ -119,43 +127,52 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
   }
 
   private fun getFacebookUser(result: Result) {
-    val parameters = Bundle()
-    parameters.putString("fields", "id,name")
-    GraphRequest(
-            AccessToken.getCurrentAccessToken(),
-            "/me",
-            parameters,
-            HttpMethod.GET
-    ) { response ->
-      val obj = response.jsonObject
-      val map = HashMap<String, String>()
-      map["id"] = obj.getString("id")
-      map["name"] = obj.getString("name")
-      result.success(map)
-    }.executeAsync()
+    if( isInstalled("com.facebook.katana") ) {
+      val parameters = Bundle()
+      parameters.putString("fields", "id,name")
+      GraphRequest(
+              AccessToken.getCurrentAccessToken(),
+              "/me",
+              parameters,
+              HttpMethod.GET
+      ) { response ->
+        val obj = response.jsonObject
+        val map = HashMap<String, String>()
+        map["id"] = obj.getString("id")
+        map["name"] = obj.getString("name")
+        result.success(map)
+      }.executeAsync()
+    } else {
+      result.error("APP_NOT_FOUND",  "Facebook app not found", null)
+    }
   }
 
   private fun getFacebookUserPages(result: Result) {
-    val profile = Profile.getCurrentProfile()
-    val parameters = Bundle()
-    parameters.putString("fields", "id,name,access_token")
-    GraphRequest(
-            AccessToken.getCurrentAccessToken(),
-            "/" + profile.id + "/accounts",
-            parameters,
-            HttpMethod.GET
-    ) { response ->
-      val arr = response.jsonObject.get("data") as JSONArray
-      val list = List(arr.length()) {
-        val map = HashMap<String, String>()
-        val obj = arr.getJSONObject(it)
-        map["id"] = obj.getString("id")
-        map["name"] = obj.getString("name")
-        map["access_token"] = obj.getString("access_token")
-        map
-      }
-      result.success(list)
-    }.executeAsync()
+    if( isInstalled("com.facebook.katana") ) {
+
+      val profile = Profile.getCurrentProfile()
+      val parameters = Bundle()
+      parameters.putString("fields", "id,name,access_token")
+      GraphRequest(
+              AccessToken.getCurrentAccessToken(),
+              "/" + profile.id + "/accounts",
+              parameters,
+              HttpMethod.GET
+      ) { response ->
+        val arr = response.jsonObject.get("data") as JSONArray
+        val list = List(arr.length()) {
+          val map = HashMap<String, String>()
+          val obj = arr.getJSONObject(it)
+          map["id"] = obj.getString("id")
+          map["name"] = obj.getString("name")
+          map["access_token"] = obj.getString("access_token")
+          map
+        }
+        result.success(list)
+      }.executeAsync()
+    } else {
+      result.error("APP_NOT_FOUND",  "Facebook app not found", null)
+    }
   }
 
   private fun shareOnFacebookPage(url: String, message: String, accessToken: String, time: Any?,
@@ -267,21 +284,39 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
   private fun shareOnNative(url: String, msg: String, result: Result) {
     try {
       val intent = Intent(Intent.ACTION_SEND)
-      intent.type = "text/plain"
       intent.putExtra(Intent.EXTRA_TEXT, msg)
-      if (!TextUtils.isEmpty(url)) {
-        val fileHelper = FileUtil(activity, url)
-        if (fileHelper.isFile()) {
-          intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-          intent.putExtra(Intent.EXTRA_STREAM, fileHelper.getUri())
-          intent.type = fileHelper.getType()
-        }
-      }
-      activity.startActivity(Intent.createChooser(intent, "Enviar post..."))
-      result.success("success")
+
+      Picasso.get()
+              .load(url)
+              .into(object: TargetPhoneGallery(){
+                override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
+                  val bitmapUri = getImageUri(bitmap)
+                  intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                  intent.putExtra(Intent.EXTRA_STREAM, bitmapUri)
+                  val cr = activity.contentResolver
+                  intent.type = cr.getType(bitmapUri)
+                  activity.startActivity(Intent.createChooser(intent, "Enviar post..."))
+                  result.success("POST_SENT")
+                }
+              })
+
     } catch (e: Exception) {
       result.error("ERROR_TO_POSTING", "Error to posting", null)
     }
+  }
+
+  fun getImageUri(inImage: Bitmap?): Uri {
+    val tempFile = File.createTempFile("img_sharing", ".jpg", activity.externalCacheDir)
+    val bts = ByteArrayOutputStream()
+    inImage!!.compress(Bitmap.CompressFormat.JPEG, 100, bts)
+    val bitmapData = bts.toByteArray()
+
+    val fos = FileOutputStream(tempFile)
+    fos.write(bitmapData)
+    fos.flush()
+    fos.close()
+
+    return FileProvider.getUriForFile(activity.applicationContext, activity.packageName +".provider", tempFile)
   }
 
   private fun openAppOnStore(packageName: String) {
@@ -297,7 +332,7 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
     }
   }
 
-  fun isInstalled(packageName: String): Boolean {
+  private fun isInstalled(packageName: String): Boolean {
     val packageManager = activity.packageManager
     return try {
       packageManager.getApplicationInfo(packageName, 0).enabled
