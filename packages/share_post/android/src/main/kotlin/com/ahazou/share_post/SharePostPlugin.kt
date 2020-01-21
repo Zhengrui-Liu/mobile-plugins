@@ -1,6 +1,7 @@
 package com.ahazou.share_post
 
 import android.app.Activity
+import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -19,6 +20,16 @@ import com.facebook.HttpMethod
 import com.facebook.Profile
 import org.json.JSONArray
 import java.net.URL
+import androidx.core.content.ContextCompat.startActivity
+import android.content.Intent
+import android.content.ActivityNotFoundException
+import android.net.Uri
+import android.text.TextUtils
+import androidx.core.content.FileProvider
+import com.facebook.appevents.ml.Utils
+import java.lang.Exception
+import java.util.ArrayList
+
 
 /** SharePostPlugin */
 class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
@@ -51,7 +62,7 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
   override fun onMethodCall(call: MethodCall, result: Result) {
     when ( call.method ) {
       "getPlatformVersion" -> result.success("Android ${android.os.Build.VERSION.RELEASE}")
-      "getFacebookUser" -> result.notImplemented()
+      "getFacebookUser" -> getFacebookUser(result)
       "getFacebookUserPages" -> getFacebookUserPages(result)
       "shareOnFacebook" -> {
         val args = call.arguments as Map<*, *>
@@ -68,14 +79,60 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
           shareOnFacebookPage(url, message, accessToken, time, facebookId, result)
         }
       }
-      "shareStoryOnInstagram" -> result.notImplemented()
-      "sharePostOnInstagram" -> result.notImplemented()
-      "shareOnWhatsapp" -> result.notImplemented()
-      "shareOnWhatsappBusiness" -> result.notImplemented()
-      "openAppOnStore" -> result.notImplemented()
-      "shareOnNative" -> result.notImplemented()
+      "shareStoryOnInstagram" -> {
+        val args = call.arguments as Map<*, *>
+        val url = args["url"] as String
+        val message = args["message"] as String
+        shareStoryOnInstagram(url, message, result)
+      }
+      "sharePostOnInstagram" -> {
+        val args = call.arguments as Map<*, *>
+        val url = args["url"] as String
+        val message = args["message"] as String
+        sharePostOnInstagram(url, message, result)
+      }
+      "shareOnWhatsapp" -> {
+        val args = call.arguments as Map<*, *>
+        val url = args["url"] as String
+        val message = args["message"] as String
+        shareOnWhatsApp(url, message, result, false)
+      }
+      "shareOnWhatsappBusiness" -> {
+        val args = call.arguments as Map<*, *>
+        val url = args["url"] as String
+        val message = args["message"] as String
+        shareOnWhatsApp(url, message, result, true)
+      }
+      "openAppOnStore" -> {
+        val args = call.arguments as Map<*, *>
+        val appUrl = args["appUrl"] as String
+        openAppOnStore(appUrl)
+      }
+      "shareOnNative" -> {
+        val args = call.arguments as Map<*, *>
+        val url = args["url"] as String
+        val message = args["message"] as String
+        shareOnNative(url, message, result)
+      }
       else -> result.notImplemented()
     }
+  }
+
+  private fun getFacebookUser(result: Result) {
+    val parameters = Bundle()
+    parameters.putString("fields", "id,name")
+    GraphRequest(
+            AccessToken.getCurrentAccessToken(),
+            "/me",
+            parameters,
+            HttpMethod.GET
+    ) { response ->
+      val obj = response.jsonObject
+      val map = HashMap<String, String>()
+      map["id"] = obj.getString("id")
+      map["name"] = obj.getString("name")
+      result.success(map)
+    }.executeAsync()
   }
 
   private fun getFacebookUserPages(result: Result) {
@@ -101,24 +158,6 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
     }.executeAsync()
   }
 
-  private fun shareOnFacebookProfile(urlImage: String, result: Result) {
-    val url = URL(urlImage)
-
-    Thread {
-      val image = BitmapFactory.decodeStream(url.openConnection().getInputStream())
-
-      activity.runOnUiThread {
-        val photo = SharePhoto.Builder().setBitmap(image).build()
-        val content = SharePhotoContent.Builder().addPhoto(photo).build()
-        val shareDialog = ShareDialog(activity)
-
-        if (ShareDialog.canShow(SharePhotoContent::class.java)) {
-          shareDialog.show(content)
-        } else result.error("FACEBOOK_APP_NOT_INSTALLED", "Facebook not installed", null)
-      }
-    }.start()
-  }
-
   private fun shareOnFacebookPage(url: String, message: String, accessToken: String, time: Any?,
                                   facebookId: String, result: Result) {
     val parameters = Bundle()
@@ -137,16 +176,134 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
             parameters,
             HttpMethod.POST
     ) { response ->
-      val a = ""
+      if( response.error == null ) {
+        result.success("POST_SENT")
+      } else result.error("ERROR_TO_POSTING", "Error to posting", null)
     }
     gr.version = "v5.0"
     gr.executeAsync()
   }
 
-  private fun isLoggedInWithFacebook(): Boolean {
-    val accessToken = AccessToken.getCurrentAccessToken()
-    return accessToken != null
+  private fun shareOnFacebookProfile(urlImage: String, result: Result) {
+    val url = URL(urlImage)
+
+    Thread {
+      val image = BitmapFactory.decodeStream(url.openConnection().getInputStream())
+
+      activity.runOnUiThread {
+        val photo = SharePhoto.Builder().setBitmap(image).build()
+        val content = SharePhotoContent.Builder().addPhoto(photo).build()
+        val shareDialog = ShareDialog(activity)
+
+        if (ShareDialog.canShow(SharePhotoContent::class.java)) {
+          shareDialog.show(content)
+        } else result.error("APP_NOT_FOUND", "Facebook app not found", null)
+      }
+    }.start()
   }
 
+  private fun shareStoryOnInstagram(url: String, msg: String, result: Result) {
+    if( isInstalled("com.instagram.android") ) {
+
+    } else {
+      result.error("APP_NOT_FOUND",  "Instagram app not found", null)
+    }
+
+  }
+
+  private fun sharePostOnInstagram(url: String, msg: String, result: Result) {
+    if( isInstalled("com.instagram.android") ) {
+      val fileHelper = FileUtil(activity, url)
+
+      val feedIntent = Intent(Intent.ACTION_SEND)
+      feedIntent.type = "image/*"
+      feedIntent.putExtra(Intent.EXTRA_TEXT, msg)
+      feedIntent.putExtra(Intent.EXTRA_STREAM, fileHelper.getUri())
+      feedIntent.setPackage("com.instagram.android")
+
+      val storiesIntent = Intent("com.instagram.share.ADD_TO_STORY")
+      storiesIntent.setDataAndType(fileHelper.getUri(),  "jpg")
+      storiesIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+      storiesIntent.setPackage("com.instagram.android")
+      // activity.grantUriPermission("com.instagram.android", fileHelper.getUri(), Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+      val chooserIntent = Intent.createChooser(feedIntent, "Compartilhar no Instagram")
+      val intents = ArrayList<Intent>()
+      intents.add(storiesIntent)
+      chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intents)
+      activity.startActivity(chooserIntent)
+    } else {
+      result.error("APP_NOT_FOUND",  "Instagram app not found", null)
+    }
+  }
+
+  private fun shareOnWhatsApp(url: String, msg: String, result: Result, shareToWhatsAppBiz: Boolean) {
+    val app = if (shareToWhatsAppBiz) "com.whatsapp.w4b" else "com.whatsapp"
+    if( isInstalled(app) ) {
+      try {
+        val whatsappIntent = Intent(Intent.ACTION_SEND)
+        whatsappIntent.type = "text/plain"
+        whatsappIntent.setPackage(app)
+        whatsappIntent.putExtra(Intent.EXTRA_TEXT, msg)
+        if (!TextUtils.isEmpty(url)) {
+          val fileHelper = FileUtil(activity, url)
+          if (fileHelper.isFile()) {
+            whatsappIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            whatsappIntent.putExtra(Intent.EXTRA_STREAM, fileHelper.getUri())
+            whatsappIntent.type = fileHelper.getType()
+          }
+        }
+        whatsappIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        activity.startActivity(whatsappIntent)
+        result.success("POST_SENT")
+      } catch (e: Exception) {
+
+      }
+    } else {
+      result.error("APP_NOT_FOUND",  "App not found", null)
+    }
+  }
+
+  private fun shareOnNative(url: String, msg: String, result: Result) {
+    try {
+      val intent = Intent(Intent.ACTION_SEND)
+      intent.type = "text/plain"
+      intent.putExtra(Intent.EXTRA_TEXT, msg)
+      if (!TextUtils.isEmpty(url)) {
+        val fileHelper = FileUtil(activity, url)
+        if (fileHelper.isFile()) {
+          intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+          intent.putExtra(Intent.EXTRA_STREAM, fileHelper.getUri())
+          intent.type = fileHelper.getType()
+        }
+      }
+      activity.startActivity(Intent.createChooser(intent, "Enviar post..."))
+      result.success("success")
+    } catch (e: Exception) {
+      result.error("ERROR_TO_POSTING", "Error to posting", null)
+    }
+  }
+
+  private fun openAppOnStore(packageName: String) {
+    val context = activity.applicationContext
+    try {
+      val playStoreUri = Uri.parse("market://details?id=$packageName")
+      val intent = Intent(Intent.ACTION_VIEW, playStoreUri)
+      context.startActivity(intent)
+    } catch (e: ActivityNotFoundException) {
+      val playStoreUri = Uri.parse("https://play.google.com/store/apps/details?id=$packageName")
+      val intent = Intent(Intent.ACTION_VIEW, playStoreUri)
+      context.startActivity(intent)
+    }
+  }
+
+  fun isInstalled(packageName: String): Boolean {
+    val packageManager = activity.packageManager
+    return try {
+      packageManager.getApplicationInfo(packageName, 0).enabled
+    } catch (e: PackageManager.NameNotFoundException) {
+      false
+    }
+  }
 
 }

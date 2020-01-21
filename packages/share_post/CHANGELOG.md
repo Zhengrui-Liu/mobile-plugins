@@ -1,3 +1,7 @@
+## 0.4.0
+
+* Sharing in Android devices
+
 ## 0.3.3
 
 * Safe logos and wpp-bs validation removed

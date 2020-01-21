@@ -70,20 +70,26 @@ class _MyAppState extends State<MyApp> {
 //    final facebookLogin = FacebookLogin();
 //    final result = await facebookLogin.logIn(["email", "pages_show_list",
 //      "publish_pages", "manage_pages", "public_profile"]);
-    var page = await SharePost.getFacebookUserPages();
+//    var page = await SharePost.getFacebookUserPages();
 
 //    var user = await SharePost.getFacebookUser();
 //
-    var map = page.first;
-    var token = map["access_token"];
+//    var map = page.first;
+//    var token = map["access_token"];
+//
+//
+//    await SharePost.shareOnFacebook(
+//        "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTYZqQeg5UFJJC6MvvBPkjTJNdnABMY1RZM6e__-K1eiCLIxUVm",
+//        "message here",
+//        token, null,
+//        m
 
-
-    await SharePost.shareOnFacebook(
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTYZqQeg5UFJJC6MvvBPkjTJNdnABMY1RZM6e__-K1eiCLIxUVm",
-        "message here",
-        token, null,
-        map["id"]
+    await SharePost.sharePostOnInstagram(
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTYZqQeg5UFJJC6MvvBPkjTJNdnABMY1RZM6e__-K1eiCLIxUVm",
+      "message here",
     );
+
+    var a = "";
 
 //    String a = await SharePost.shareOnWhatsappBusiness(
 //        "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcRdezBUdWFUbArwZCmQq7_nJNqEcK_02k9laUugbomQV5wtbhHz",

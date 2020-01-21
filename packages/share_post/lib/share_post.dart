@@ -7,13 +7,13 @@ class SharePost {
 
   static String INSTAGRAM         =
   type("https://apps.apple.com/br/app/instagram/id389801252",
-      "https://play.google.com/store/apps/details?id=com.instagram.android");
+      "com.instagram.android");
   static String WHATSAPP          =
   type("https://apps.apple.com/br/app/whatsapp-messenger/id310633997",
-      "https://play.google.com/store/apps/details?id=com.whatsapp");
+      "com.whatsapp");
   static String WHATSAPP_BUSINESS =
   type("https://apps.apple.com/br/app/whatsapp-business/id1386412985",
-      "https://play.google.com/store/apps/details?id=com.whatsapp.w4b");
+      "com.whatsapp.w4b");
 
   static type(String appleStoreLink, String googlePlayLink) {
     return Platform.isIOS ? appleStoreLink : googlePlayLink;
