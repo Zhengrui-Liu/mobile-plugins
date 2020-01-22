@@ -1,3 +1,7 @@
+## 0.4.2
+
+* Fix URI share
+
 ## 0.4.1
 
 * Native share OK

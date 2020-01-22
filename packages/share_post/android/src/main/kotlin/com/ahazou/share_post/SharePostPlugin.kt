@@ -90,8 +90,7 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
       "shareStoryOnInstagram" -> {
         val args = call.arguments as Map<*, *>
         val url = args["url"] as String
-        val message = args["message"] as String
-        shareStoryOnInstagram(url, message, result)
+        shareStoryOnInstagram(url, result)
       }
       "sharePostOnInstagram" -> {
         val args = call.arguments as Map<*, *>
@@ -219,36 +218,47 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
     }.start()
   }
 
-  private fun shareStoryOnInstagram(url: String, msg: String, result: Result) {
+  private fun shareStoryOnInstagram(url: String, result: Result) {
     if( isInstalled("com.instagram.android") ) {
+
+      Picasso.get()
+              .load(url)
+              .into(object: TargetPhoneGallery(){
+                override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
+                  val bitmapUri = getImageUri(bitmap)
+
+                  val storiesIntent = Intent("com.instagram.share.ADD_TO_STORY")
+                  storiesIntent.setDataAndType(bitmapUri,  "jpg")
+                  storiesIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+                  activity.startActivity(storiesIntent)
+                  result.success("POST_SENT")
+                }
+              })
 
     } else {
       result.error("APP_NOT_FOUND",  "Instagram app not found", null)
     }
-
   }
 
   private fun sharePostOnInstagram(url: String, msg: String, result: Result) {
     if( isInstalled("com.instagram.android") ) {
-      val fileHelper = FileUtil(activity, url)
+      Picasso.get()
+              .load(url)
+              .into(object: TargetPhoneGallery(){
+                override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
+                  val bitmapUri = getImageUri(bitmap)
 
-      val feedIntent = Intent(Intent.ACTION_SEND)
-      feedIntent.type = "image/*"
-      feedIntent.putExtra(Intent.EXTRA_TEXT, msg)
-      feedIntent.putExtra(Intent.EXTRA_STREAM, fileHelper.getUri())
-      feedIntent.setPackage("com.instagram.android")
+                  val feedIntent = Intent(Intent.ACTION_SEND)
+                  feedIntent.type = "image/*"
+                  feedIntent.putExtra(Intent.EXTRA_TEXT, msg)
+                  feedIntent.putExtra(Intent.EXTRA_STREAM, bitmapUri)
+                  feedIntent.setPackage("com.instagram.android")
 
-      val storiesIntent = Intent("com.instagram.share.ADD_TO_STORY")
-      storiesIntent.setDataAndType(fileHelper.getUri(),  "jpg")
-      storiesIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-      storiesIntent.setPackage("com.instagram.android")
-      // activity.grantUriPermission("com.instagram.android", fileHelper.getUri(), Intent.FLAG_GRANT_READ_URI_PERMISSION)
-
-      val chooserIntent = Intent.createChooser(feedIntent, "Compartilhar no Instagram")
-      val intents = ArrayList<Intent>()
-      intents.add(storiesIntent)
-      chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intents)
-      activity.startActivity(chooserIntent)
+                  activity.startActivity(feedIntent)
+                  result.success("POST_SENT")
+                }
+              })
     } else {
       result.error("APP_NOT_FOUND",  "Instagram app not found", null)
     }
@@ -257,25 +267,22 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
   private fun shareOnWhatsApp(url: String, msg: String, result: Result, shareToWhatsAppBiz: Boolean) {
     val app = if (shareToWhatsAppBiz) "com.whatsapp.w4b" else "com.whatsapp"
     if( isInstalled(app) ) {
-      try {
-        val whatsappIntent = Intent(Intent.ACTION_SEND)
-        whatsappIntent.type = "text/plain"
-        whatsappIntent.setPackage(app)
-        whatsappIntent.putExtra(Intent.EXTRA_TEXT, msg)
-        if (!TextUtils.isEmpty(url)) {
-          val fileHelper = FileUtil(activity, url)
-          if (fileHelper.isFile()) {
-            whatsappIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            whatsappIntent.putExtra(Intent.EXTRA_STREAM, fileHelper.getUri())
-            whatsappIntent.type = fileHelper.getType()
-          }
-        }
-        whatsappIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        activity.startActivity(whatsappIntent)
-        result.success("POST_SENT")
-      } catch (e: Exception) {
-
-      }
+      val whatsappIntent = Intent(Intent.ACTION_SEND)
+      whatsappIntent.setPackage(app)
+      whatsappIntent.putExtra(Intent.EXTRA_TEXT, msg)
+      Picasso.get()
+              .load(url)
+              .into(object: TargetPhoneGallery(){
+                override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
+                  val bitmapUri = getImageUri(bitmap)
+                  whatsappIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                  whatsappIntent.putExtra(Intent.EXTRA_STREAM, bitmapUri)
+                  val cr = activity.contentResolver
+                  whatsappIntent.type = cr.getType(bitmapUri)
+                  activity.startActivity(whatsappIntent)
+                  result.success("POST_SENT")
+                }
+              })
     } else {
       result.error("APP_NOT_FOUND",  "App not found", null)
     }
@@ -285,7 +292,6 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
     try {
       val intent = Intent(Intent.ACTION_SEND)
       intent.putExtra(Intent.EXTRA_TEXT, msg)
-
       Picasso.get()
               .load(url)
               .into(object: TargetPhoneGallery(){
@@ -299,7 +305,6 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
                   result.success("POST_SENT")
                 }
               })
-
     } catch (e: Exception) {
       result.error("ERROR_TO_POSTING", "Error to posting", null)
     }
