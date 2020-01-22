@@ -1,5 +1,9 @@
 ## 0.4.2
 
+* Removed unused .kt class
+
+## 0.4.2
+
 * Fix URI share
 
 ## 0.4.1
