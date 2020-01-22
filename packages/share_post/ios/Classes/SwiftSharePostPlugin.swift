@@ -22,13 +22,13 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
             break
         case "shareOnFacebook":
             let args = call.arguments as! Dictionary<String, Any>
-            let url: String = args["url"] as! String
+            let url: String? = args["url"] as? String ?? nil
             let message: String = args["message"] as! String
             let accessToken: String? = args["accessToken"] as? String ?? nil
             let time: NSNumber? = args["time"] as? NSNumber ?? nil
             let facebookId: String = args["facebookId"] as! String
             if( accessToken == nil ) {
-                shareOnFacebookProfile(url: url, result: result)
+                shareOnFacebookProfile(url: url, message: message, result: result)
             } else {
                 shareOnFacebookPage(url: url, message: message, accessToken: accessToken, time: time, facebookId: facebookId, result: result)
             }
@@ -63,10 +63,10 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
             let url: String = args["url"] as! String
             shareOnNative(url: url, result: result)
             break
-        case "shareLink" :
+        case "shareContent" :
             let args = call.arguments as! Dictionary<String, Any>
-            let link: String = args["link"] as! String
-            shareLink(link: link, result: result)
+            let content: String = args["content"] as! String
+            shareContent(content: content, result: result)
             break
         default:
             result(FlutterError(code: "METHOD_NOT_FOUND", message: "Method not found", details: nil))
@@ -102,10 +102,12 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
         }
     }
     
-    private func shareOnFacebookPage(url: String, message: String, accessToken: String?,
+    private func shareOnFacebookPage(url: String?, message: String, accessToken: String?,
                                      time: NSNumber?, facebookId: String, result: @escaping FlutterResult) {
         var dict: [String:Any] = [:]
-        dict["url"] = url
+        if( url != nil ) {
+            dict["url"] = url
+        }
         dict["message"] = message
         dict["access_token"] = accessToken
         
@@ -114,7 +116,9 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
             dict["scheduled_publish_time"] = time
             dict["published"] = "false"
         }
-        let graphPath = "\(facebookId)/photos"
+        
+        let partPath = ( url != nil ) ? "photos" : "feed"
+        let graphPath = "\(facebookId)/\(partPath)"
         let request = GraphRequest(graphPath: graphPath, parameters: dict, tokenString: dict["access_token"] as? String, version: "v5.0", httpMethod: HTTPMethod.post)
         request.start(completionHandler: {(_ connection, _ values, _ error) in
             if( error == nil ) {
@@ -125,14 +129,21 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
         })
     }
     
-    private func shareOnFacebookProfile(url: String, result: @escaping FlutterResult) {
-        let url = URL(string: url)!
-        let data = try? Data(contentsOf: url)
-        let img = UIImage(data: data!)!
-        let photo = SharePhoto(image: img, userGenerated: true)
-        let content = SharePhotoContent()
-        content.photos = [photo]
-        let showDialog = ShareDialog(fromViewController: UIApplication.shared.keyWindow?.rootViewController, content: content, delegate: self)
+    private func shareOnFacebookProfile(url: String?, message: String?, result: @escaping FlutterResult) {
+        var content:SharingContent? = nil
+        if( url != nil ) {
+            let url = URL(string: url!)!
+            let data = try? Data(contentsOf: url)
+            let img = UIImage(data: data!)!
+            let photo = SharePhoto(image: img, userGenerated: true)
+            content = SharePhotoContent()
+            (content as! SharePhotoContent).photos = [photo]
+        } else {
+            content = ShareLinkContent()
+            (content as! ShareLinkContent).quote = message
+        }
+                
+        let showDialog = ShareDialog(fromViewController: UIApplication.shared.keyWindow?.rootViewController, content: content!, delegate: self)
         if (showDialog.canShow) {
             showDialog.show()
             result("POST_SENT")
@@ -269,9 +280,8 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
         UIApplication.shared.keyWindow?.rootViewController?.present(documentsController, animated: true, completion: nil)
     }
     
-    func shareLink(link: String, result: @escaping FlutterResult) {
-        let activityItem : NSURL = NSURL(string: link)!
-        let documentsController = UIActivityViewController.init(activityItems: [activityItem], applicationActivities: nil)
+    func shareContent(content: String, result: @escaping FlutterResult) {
+        let documentsController = UIActivityViewController.init(activityItems: [content], applicationActivities: nil)
         documentsController.excludedActivityTypes = [ .postToFacebook ]
         UIApplication.shared.keyWindow?.rootViewController?.present(documentsController, animated: true, completion: nil)
     }

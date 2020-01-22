@@ -1,3 +1,7 @@
+## 0.4.5
+
+* Share only content
+
 ## 0.4.4
 
 * Share link added
