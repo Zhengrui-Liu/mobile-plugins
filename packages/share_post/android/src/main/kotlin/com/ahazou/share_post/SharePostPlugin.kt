@@ -121,6 +121,11 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
         val message = args["message"] as String
         shareOnNative(url, message, result)
       }
+      "shareLink" -> {
+        val args = call.arguments as Map<*, *>
+        val link = args["link"] as String
+        shareLink(link, result)
+      }
       else -> result.notImplemented()
     }
   }
@@ -308,6 +313,14 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
     } catch (e: Exception) {
       result.error("ERROR_TO_POSTING", "Error to posting", null)
     }
+  }
+
+  private fun shareLink(link: String, result: Result) {
+    val i = Intent(Intent.ACTION_SEND)
+    i.type = "text/plain"
+    i.putExtra(Intent.EXTRA_SUBJECT, "Sharing URL")
+    i.putExtra(Intent.EXTRA_TEXT, "http://www.url.com")
+    activity.startActivity(Intent.createChooser(i, "Enviar link..."))
   }
 
   fun getImageUri(inImage: Bitmap?): Uri {

@@ -63,6 +63,11 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
             let url: String = args["url"] as! String
             shareOnNative(url: url, result: result)
             break
+        case "shareLink" :
+            let args = call.arguments as! Dictionary<String, Any>
+            let link: String = args["link"] as! String
+            shareLink(link: link, result: result)
+            break
         default:
             result(FlutterError(code: "METHOD_NOT_FOUND", message: "Method not found", details: nil))
         }
@@ -260,6 +265,13 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
         let data = try? Data(contentsOf: urlImage)
         let photo = UIImage(data: data!)!
         let documentsController = UIActivityViewController.init(activityItems: [photo], applicationActivities: nil)
+        documentsController.excludedActivityTypes = [ .postToFacebook ]
+        UIApplication.shared.keyWindow?.rootViewController?.present(documentsController, animated: true, completion: nil)
+    }
+    
+    func shareLink(link: String, result: @escaping FlutterResult) {
+        let activityItem : NSURL = NSURL(string: link)!
+        let documentsController = UIActivityViewController.init(activityItems: [activityItem], applicationActivities: nil)
         documentsController.excludedActivityTypes = [ .postToFacebook ]
         UIApplication.shared.keyWindow?.rootViewController?.present(documentsController, animated: true, completion: nil)
     }

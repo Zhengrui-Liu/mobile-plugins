@@ -128,6 +128,18 @@ class SharePost {
     return result;
   }
 
+  static Future<String> shareLink(String link, String message) async {
+    final Map<String, Object> arguments = Map<String, dynamic>();
+    arguments.putIfAbsent('link', () => link);
+    dynamic result;
+    try {
+      result = await _channel.invokeMethod('shareLink', arguments);
+    } catch (e) {
+      return null;
+    }
+    return result;
+  }
+
   static Future<String> openAppOnStore(String appUrl) async {
     final Map<String, Object> arguments = Map<String, dynamic>();
     arguments.putIfAbsent('appUrl', () => appUrl);
