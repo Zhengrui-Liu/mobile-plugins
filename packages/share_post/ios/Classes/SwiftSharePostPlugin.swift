@@ -298,7 +298,7 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
     func checkPermissionToPublish(result: @escaping FlutterResult) {
         result(
             AccessToken.current != nil ?
-            AccessToken.current?.hasGranted("publish_pages")! && AccessToken.current?.hasGranted("manage_pages")! :
+                ((AccessToken.current?.hasGranted("publish_pages"))!) && ((AccessToken.current?.hasGranted("manage_pages"))!) :
             false
         )
     }
