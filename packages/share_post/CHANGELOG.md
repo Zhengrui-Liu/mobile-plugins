@@ -1,5 +1,9 @@
 ## 0.4.6
 
+* Introducing checkPermissionToPublish() method to validating if user gives control to send post
+
+## 0.4.6
+
 * Fix share iOS
 
 ## 0.4.5

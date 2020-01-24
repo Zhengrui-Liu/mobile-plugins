@@ -65,6 +65,9 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
             let message: String? = args["message"] as? String ?? nil
             shareOnNative(url: url, message: message, result: result)
             break
+        case "checkPermissionToPublish" :
+            checkPermissionToPublish(result: result)
+            break
         default:
             result(FlutterError(code: "METHOD_NOT_FOUND", message: "Method not found", details: nil))
         }
@@ -95,6 +98,8 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
                         }
                     }
                 })
+            } else {
+                result(FlutterError(code: "ERROR_PERMISSION", message: "Error to connect; missing permission", details: nil))
             }
         }
     }
@@ -139,7 +144,7 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
             content = ShareLinkContent()
             (content as! ShareLinkContent).quote = message
         }
-                
+        
         let showDialog = ShareDialog(fromViewController: UIApplication.shared.keyWindow?.rootViewController, content: content!, delegate: self)
         if (showDialog.canShow) {
             showDialog.show()
@@ -288,6 +293,14 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
     func openAppOnStore(appUrl: String) {
         let app = URL(string: appUrl)!
         UIApplication.shared.openURL(app)
+    }
+    
+    func checkPermissionToPublish(result: @escaping FlutterResult) {
+        result(
+            AccessToken.current != nil ?
+            AccessToken.current?.hasGranted("publish_pages")! && AccessToken.current?.hasGranted("manage_pages")! :
+            false
+        )
     }
     
     public func sharer(_ sharer: Sharing, didCompleteWithResults results: [String : Any]) {

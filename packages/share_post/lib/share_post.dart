@@ -152,4 +152,14 @@ class SharePost {
     return result;
   }
 
+  static Future<bool> checkPermissionToPublish() async {
+    dynamic result;
+    try {
+      result = await _channel.invokeMethod('checkPermissionToPublish');
+    } catch (e) {
+      return false;
+    }
+    return result;
+  }
+
 }
