@@ -108,7 +108,7 @@ class SharePost {
     arguments.putIfAbsent('message', () => message);
     dynamic result;
     try {
-      result = await _channel.invokeMethod('shareOnWhatsappBusiness', arguments);
+      result = await _channel.invokeMethod('shareOnWhatsapp', arguments);
     } catch (e) {
       return (e as PlatformException).code;
     }

@@ -45,13 +45,14 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
             break
         case "shareOnWhatsapp" :
             let args = call.arguments as! Dictionary<String, Any>
-            let url: String = args["url"] as! String
-            shareOnWhatsapp(url: url, app: "whatsapp://app", result: result)
-            break
-        case "shareOnWhatsappBusiness" :
-            let args = call.arguments as! Dictionary<String, Any>
-            let url: String = args["url"] as! String
-            shareOnWhatsapp(url: url, app: "whatsapp://app", result: result)
+            let url: String? = args["url"] as? String ?? nil
+            let message: String! = args["message"] as? String ?? ""
+            if( url != nil ) {
+                shareOnWhatsapp(url: url, app: "whatsapp://app", result: result)
+            } else {
+                let messageEncoded = message.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)!
+                shareOnWhatsapp(url: url, app: "whatsapp://send?text=" + messageEncoded, result: result)
+            }
             break
         case "openAppOnStore" :
             let args = call.arguments as! Dictionary<String, Any>
@@ -60,13 +61,9 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
             break
         case "shareOnNative" :
             let args = call.arguments as! Dictionary<String, Any>
-            let url: String = args["url"] as! String
-            shareOnNative(url: url, result: result)
-            break
-        case "shareContent" :
-            let args = call.arguments as! Dictionary<String, Any>
-            let content: String = args["content"] as! String
-            shareContent(content: content, result: result)
+            let url: String? = args["url"] as? String ?? nil
+            let message: String? = args["message"] as? String ?? nil
+            shareOnNative(url: url, message: message, result: result)
             break
         default:
             result(FlutterError(code: "METHOD_NOT_FOUND", message: "Method not found", details: nil))
@@ -224,20 +221,22 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
         //}
     }
     
-    func shareOnWhatsapp(url: String, app: String, result: @escaping FlutterResult) {
+    func shareOnWhatsapp(url: String?, app: String, result: @escaping FlutterResult) {
         let app = URL(string: app)!
         if UIApplication.shared.canOpenURL(app){
-            let urlImage = URL(string: url)!
-            let data = try? Data(contentsOf: urlImage)
-            let photo = UIImage(data: data!)!
-            
-            let documentsController = UIActivityViewController.init(activityItems: [photo], applicationActivities: nil)
-            
-            documentsController.excludedActivityTypes = [ .postToFacebook, .postToTwitter, .postToWeibo,
-                                                          .message, .mail, .print, .copyToPasteboard,
-                                                          .assignToContact, .saveToCameraRoll, .addToReadingList,
-                                                          .postToFlickr, .postToVimeo, .postToTencentWeibo, .airDrop]
-            UIApplication.shared.keyWindow?.rootViewController?.present(documentsController, animated: true, completion: nil)
+            if( url != nil ) {
+                let urlImage = URL(string: url!)!
+                let data = try? Data(contentsOf: urlImage)
+                let photo = UIImage(data: data!)!
+                let documentsController = UIActivityViewController.init(activityItems: [photo], applicationActivities: nil)
+                documentsController.excludedActivityTypes = [ .postToFacebook, .postToTwitter, .postToWeibo,
+                                                              .message, .mail, .print, .copyToPasteboard,
+                                                              .assignToContact, .saveToCameraRoll, .addToReadingList,
+                                                              .postToFlickr, .postToVimeo, .postToTencentWeibo, .airDrop]
+                UIApplication.shared.keyWindow?.rootViewController?.present(documentsController, animated: true, completion: nil)
+            } else {
+                UIApplication.shared.openURL(app)
+            }
             result("POST_SENT")
         } else {
             result(FlutterError(code: "APP_NOT_FOUND", message: "WhatsApp app not found", details: nil))
@@ -271,19 +270,19 @@ public class SwiftSharePostPlugin: NSObject, FlutterPlugin, SharingDelegate, UID
         //}
     }
     
-    func shareOnNative(url: String, result: @escaping FlutterResult) {
-        let urlImage = URL(string: url)!
-        let data = try? Data(contentsOf: urlImage)
-        let photo = UIImage(data: data!)!
-        let documentsController = UIActivityViewController.init(activityItems: [photo], applicationActivities: nil)
-        documentsController.excludedActivityTypes = [ .postToFacebook ]
-        UIApplication.shared.keyWindow?.rootViewController?.present(documentsController, animated: true, completion: nil)
-    }
-    
-    func shareContent(content: String, result: @escaping FlutterResult) {
-        let documentsController = UIActivityViewController.init(activityItems: [content], applicationActivities: nil)
-        documentsController.excludedActivityTypes = [ .postToFacebook ]
-        UIApplication.shared.keyWindow?.rootViewController?.present(documentsController, animated: true, completion: nil)
+    func shareOnNative(url: String?, message: String?, result: @escaping FlutterResult) {
+        if( url != nil ) {
+            let urlImage = URL(string: url!)!
+            let data = try? Data(contentsOf: urlImage)
+            let photo = UIImage(data: data!)!
+            let documentsController = UIActivityViewController.init(activityItems: [photo], applicationActivities: nil)
+            documentsController.excludedActivityTypes = [ .postToFacebook ]
+            UIApplication.shared.keyWindow?.rootViewController?.present(documentsController, animated: true, completion: nil)
+        } else {
+            let documentsController = UIActivityViewController.init(activityItems: [message!], applicationActivities: nil)
+            documentsController.excludedActivityTypes = [ .postToFacebook ]
+            UIApplication.shared.keyWindow?.rootViewController?.present(documentsController, animated: true, completion: nil)
+        }
     }
     
     func openAppOnStore(appUrl: String) {

@@ -1,3 +1,7 @@
+## 0.4.6
+
+* Fix share iOS
+
 ## 0.4.5
 
 * Share only content
