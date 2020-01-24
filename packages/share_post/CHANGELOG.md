@@ -1,8 +1,8 @@
-## 0.4.7
+## 0.4.8
 
 * Fix Swift null-safe 
 
-## 0.4.6
+## 0.4.7
 
 * Introducing checkPermissionToPublish() method to validating if user gives control to send post
 
