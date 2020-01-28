@@ -20,23 +20,15 @@ import com.facebook.HttpMethod
 import com.facebook.Profile
 import org.json.JSONArray
 import java.net.URL
-import androidx.core.content.ContextCompat.startActivity
 import android.content.Intent
 import android.content.ActivityNotFoundException
-import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
-import android.os.Environment
-import android.provider.MediaStore
-import android.text.TextUtils
 import androidx.core.content.FileProvider
-import com.facebook.appevents.ml.Utils
-import com.squareup.picasso.Picasso
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.lang.Exception
-import java.util.ArrayList
 
 
 /** SharePostPlugin */
@@ -74,7 +66,7 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
       "getFacebookUserPages" -> getFacebookUserPages(result)
       "shareOnFacebook" -> {
         val args = call.arguments as Map<*, *>
-        val url = args["url"] as String
+        val url: String? = args["url"] as? String?
         val message = args["message"] as String
         val accessToken = args["accessToken"]
         val time = args["time"]
@@ -121,68 +113,57 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
         val message = args["message"] as String
         shareOnNative(url, message, result)
       }
-      "shareLink" -> {
-        val args = call.arguments as Map<*, *>
-        val link = args["link"] as String
-        shareLink(link, result)
-      }
+      "checkPermissionToPublish" -> checkPermissionToPublish(result)
       else -> result.notImplemented()
     }
   }
 
   private fun getFacebookUser(result: Result) {
-    if( isInstalled("com.facebook.katana") ) {
-      val parameters = Bundle()
-      parameters.putString("fields", "id,name")
-      GraphRequest(
-              AccessToken.getCurrentAccessToken(),
-              "/me",
-              parameters,
-              HttpMethod.GET
-      ) { response ->
-        val obj = response.jsonObject
-        val map = HashMap<String, String>()
-        map["id"] = obj.getString("id")
-        map["name"] = obj.getString("name")
-        result.success(map)
-      }.executeAsync()
-    } else {
-      result.error("APP_NOT_FOUND",  "Facebook app not found", null)
-    }
+    val parameters = Bundle()
+    parameters.putString("fields", "id,name")
+    GraphRequest(
+            AccessToken.getCurrentAccessToken(),
+            "/me",
+            parameters,
+            HttpMethod.GET
+    ) { response ->
+      val obj = response.jsonObject
+      val map = HashMap<String, String>()
+      map["id"] = obj.getString("id")
+      map["name"] = obj.getString("name")
+      result.success(map)
+    }.executeAsync()
   }
 
   private fun getFacebookUserPages(result: Result) {
-    if( isInstalled("com.facebook.katana") ) {
-
-      val profile = Profile.getCurrentProfile()
-      val parameters = Bundle()
-      parameters.putString("fields", "id,name,access_token")
-      GraphRequest(
-              AccessToken.getCurrentAccessToken(),
-              "/" + profile.id + "/accounts",
-              parameters,
-              HttpMethod.GET
-      ) { response ->
-        val arr = response.jsonObject.get("data") as JSONArray
-        val list = List(arr.length()) {
-          val map = HashMap<String, String>()
-          val obj = arr.getJSONObject(it)
-          map["id"] = obj.getString("id")
-          map["name"] = obj.getString("name")
-          map["access_token"] = obj.getString("access_token")
-          map
-        }
-        result.success(list)
-      }.executeAsync()
-    } else {
-      result.error("APP_NOT_FOUND",  "Facebook app not found", null)
-    }
+    val profile = Profile.getCurrentProfile()
+    val parameters = Bundle()
+    parameters.putString("fields", "id,name,access_token")
+    GraphRequest(
+            AccessToken.getCurrentAccessToken(),
+            "/" + profile.id + "/accounts",
+            parameters,
+            HttpMethod.GET
+    ) { response ->
+      val arr = response.jsonObject.get("data") as JSONArray
+      val list = List(arr.length()) {
+        val map = HashMap<String, String>()
+        val obj = arr.getJSONObject(it)
+        map["id"] = obj.getString("id")
+        map["name"] = obj.getString("name")
+        map["access_token"] = obj.getString("access_token")
+        map
+      }
+      result.success(list)
+    }.executeAsync()
   }
 
-  private fun shareOnFacebookPage(url: String, message: String, accessToken: String, time: Any?,
+  private fun shareOnFacebookPage(url: String?, message: String, accessToken: String, time: Any?,
                                   facebookId: String, result: Result) {
     val parameters = Bundle()
-    parameters.putString("url", url)
+    if( url != null ) {
+      parameters.putString("url", url)
+    }
     parameters.putString("message", message)
     parameters.putString("access_token", accessToken)
     if( time != null ) {
@@ -205,7 +186,7 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
     gr.executeAsync()
   }
 
-  private fun shareOnFacebookProfile(urlImage: String, result: Result) {
+  private fun shareOnFacebookProfile(urlImage: String?, result: Result) {
     val url = URL(urlImage)
 
     Thread {
@@ -225,22 +206,22 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
 
   private fun shareStoryOnInstagram(url: String, result: Result) {
     if( isInstalled("com.instagram.android") ) {
+      val urlImage = URL(url)
 
-      Picasso.get()
-              .load(url)
-              .into(object: TargetPhoneGallery(){
-                override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
-                  val bitmapUri = getImageUri(bitmap)
+      Thread {
+        val image = BitmapFactory.decodeStream(urlImage.openConnection().getInputStream())
 
-                  val storiesIntent = Intent("com.instagram.share.ADD_TO_STORY")
-                  storiesIntent.setDataAndType(bitmapUri,  "jpg")
-                  storiesIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        activity.runOnUiThread {
+          val bitmapUri = getImageUri(image)
 
-                  activity.startActivity(storiesIntent)
-                  result.success("POST_SENT")
-                }
-              })
+          val storiesIntent = Intent("com.instagram.share.ADD_TO_STORY")
+          storiesIntent.setDataAndType(bitmapUri,  "jpg")
+          storiesIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 
+          activity.startActivity(storiesIntent)
+          result.success("POST_SENT")
+        }
+      }.start()
     } else {
       result.error("APP_NOT_FOUND",  "Instagram app not found", null)
     }
@@ -248,22 +229,24 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
 
   private fun sharePostOnInstagram(url: String, msg: String, result: Result) {
     if( isInstalled("com.instagram.android") ) {
-      Picasso.get()
-              .load(url)
-              .into(object: TargetPhoneGallery(){
-                override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
-                  val bitmapUri = getImageUri(bitmap)
+      val urlImage = URL(url)
 
-                  val feedIntent = Intent(Intent.ACTION_SEND)
-                  feedIntent.type = "image/*"
-                  feedIntent.putExtra(Intent.EXTRA_TEXT, msg)
-                  feedIntent.putExtra(Intent.EXTRA_STREAM, bitmapUri)
-                  feedIntent.setPackage("com.instagram.android")
+      Thread {
+        val image = BitmapFactory.decodeStream(urlImage.openConnection().getInputStream())
 
-                  activity.startActivity(feedIntent)
-                  result.success("POST_SENT")
-                }
-              })
+        activity.runOnUiThread {
+          val bitmapUri = getImageUri(image)
+
+          val feedIntent = Intent(Intent.ACTION_SEND)
+          feedIntent.type = "image/*"
+          feedIntent.putExtra(Intent.EXTRA_TEXT, msg)
+          feedIntent.putExtra(Intent.EXTRA_STREAM, bitmapUri)
+          feedIntent.setPackage("com.instagram.android")
+
+          activity.startActivity(feedIntent)
+          result.success("POST_SENT")
+        }
+      }.start()
     } else {
       result.error("APP_NOT_FOUND",  "Instagram app not found", null)
     }
@@ -275,19 +258,23 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
       val whatsappIntent = Intent(Intent.ACTION_SEND)
       whatsappIntent.setPackage(app)
       whatsappIntent.putExtra(Intent.EXTRA_TEXT, msg)
-      Picasso.get()
-              .load(url)
-              .into(object: TargetPhoneGallery(){
-                override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
-                  val bitmapUri = getImageUri(bitmap)
-                  whatsappIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                  whatsappIntent.putExtra(Intent.EXTRA_STREAM, bitmapUri)
-                  val cr = activity.contentResolver
-                  whatsappIntent.type = cr.getType(bitmapUri)
-                  activity.startActivity(whatsappIntent)
-                  result.success("POST_SENT")
-                }
-              })
+
+      val urlImage = URL(url)
+
+      Thread {
+        val image = BitmapFactory.decodeStream(urlImage.openConnection().getInputStream())
+
+        activity.runOnUiThread {
+          val bitmapUri = getImageUri(image)
+
+          whatsappIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+          whatsappIntent.putExtra(Intent.EXTRA_STREAM, bitmapUri)
+          val cr = activity.contentResolver
+          whatsappIntent.type = cr.getType(bitmapUri)
+          activity.startActivity(whatsappIntent)
+          result.success("POST_SENT")
+        }
+      }.start()
     } else {
       result.error("APP_NOT_FOUND",  "App not found", null)
     }
@@ -297,33 +284,37 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
     try {
       val intent = Intent(Intent.ACTION_SEND)
       intent.putExtra(Intent.EXTRA_TEXT, msg)
-      Picasso.get()
-              .load(url)
-              .into(object: TargetPhoneGallery(){
-                override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
-                  val bitmapUri = getImageUri(bitmap)
-                  intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                  intent.putExtra(Intent.EXTRA_STREAM, bitmapUri)
-                  val cr = activity.contentResolver
-                  intent.type = cr.getType(bitmapUri)
-                  activity.startActivity(Intent.createChooser(intent, "Enviar post..."))
-                  result.success("POST_SENT")
-                }
-              })
+      val urlImage = URL(url)
+
+      Thread {
+        val image = BitmapFactory.decodeStream(urlImage.openConnection().getInputStream())
+
+        activity.runOnUiThread {
+          val bitmapUri = getImageUri(image)
+
+          intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+          intent.putExtra(Intent.EXTRA_STREAM, bitmapUri)
+          val cr = activity.contentResolver
+          intent.type = cr.getType(bitmapUri)
+          activity.startActivity(Intent.createChooser(intent, "Enviar post..."))
+          result.success("POST_SENT")
+        }
+      }.start()
     } catch (e: Exception) {
       result.error("ERROR_TO_POSTING", "Error to posting", null)
     }
   }
 
-  private fun shareLink(link: String, result: Result) {
-    val i = Intent(Intent.ACTION_SEND)
-    i.type = "text/plain"
-    i.putExtra(Intent.EXTRA_SUBJECT, "Sharing URL")
-    i.putExtra(Intent.EXTRA_TEXT, "http://www.url.com")
-    activity.startActivity(Intent.createChooser(i, "Enviar link..."))
+  private fun checkPermissionToPublish(result: Result) {
+    if( AccessToken.getCurrentAccessToken() != null ) {
+      val accessToken = AccessToken.getCurrentAccessToken()
+      result.success(accessToken.permissions.contains("publish_pages") &&
+              accessToken.permissions.contains("manage_pages"))
+    }
+    result.success(false)
   }
 
-  fun getImageUri(inImage: Bitmap?): Uri {
+  private fun getImageUri(inImage: Bitmap?): Uri {
     val tempFile = File.createTempFile("img_sharing", ".jpg", activity.externalCacheDir)
     val bts = ByteArrayOutputStream()
     inImage!!.compress(Bitmap.CompressFormat.JPEG, 100, bts)

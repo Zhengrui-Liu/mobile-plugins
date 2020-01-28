@@ -90,18 +90,18 @@ class _MyAppState extends State<MyApp> {
 //    );
 //
 
-    String a = await SharePost.shareOnWhatsapp(
-        null,
-        "message hereee "
-            ""
-            ""
-            ""
-            ""
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTYZqQeg5UFJJC6MvvBPkjTJNdnABMY1RZM6e__-K1eiCLIxUVm"
-
-
-
-    );
+//    String a = await SharePost.shareOnWhatsapp(
+//        null,
+//        "message hereee "
+//            ""
+//            ""
+//            ""
+//            ""
+//            "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTYZqQeg5UFJJC6MvvBPkjTJNdnABMY1RZM6e__-K1eiCLIxUVm"
+//
+//
+//
+//    );
 
   }
 
