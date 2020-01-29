@@ -72,16 +72,18 @@ class _MyAppState extends State<MyApp> {
 //      "publish_pages", "manage_pages", "public_profile"]);
 
 //    var page = await SharePost.getFacebookUserPages();
-//    var user = await SharePost.getFacebookUser();
+    var user = await SharePost.getFacebookUser();
 
 //    var map = page.first;
 //    var token = map["access_token"];
 //
-//    await SharePost.shareOnFacebook(
-//        null,
-//        "message here https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTYZqQeg5UFJJC6MvvBPkjTJNdnABMY1RZM6e__-K1eiCLIxUVm",
-//        token, null,
-//        map["id"]);
+
+
+    await SharePost.shareOnFacebook(
+        null,
+        "message here https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTYZqQeg5UFJJC6MvvBPkjTJNdnABMY1RZM6e__-K1eiCLIxUVm",
+        null, null,
+        user["id"]);
 
 //    await SharePost.shareContent("message here https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTYZqQeg5UFJJC6MvvBPkjTJNdnABMY1RZM6e__-K1eiCLIxUVm");
 //    await SharePost.shareOnNative(

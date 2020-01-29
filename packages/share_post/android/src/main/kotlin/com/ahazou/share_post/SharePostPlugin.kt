@@ -25,6 +25,10 @@ import android.content.ActivityNotFoundException
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.core.content.FileProvider
+import com.facebook.internal.FacebookDialogBase
+import com.facebook.share.Sharer
+import com.facebook.share.model.ShareContent
+import com.facebook.share.model.ShareLinkContent
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -69,11 +73,11 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
         val url: String? = args["url"] as? String?
         val message = args["message"] as String
         val accessToken = args["accessToken"]
-        val time = args["time"]
+        val time: Long? = if ( args["time"] == null ) null else (args["time"] as? Int)!!.toLong()
         val facebookId = args["facebookId"] as String
 
         if( accessToken == null ) {
-          shareOnFacebookProfile(url, result)
+          shareOnFacebookProfile(url, message, result)
         } else {
           accessToken as String
           shareOnFacebookPage(url, message, accessToken, time, facebookId, result)
@@ -119,46 +123,50 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
   }
 
   private fun getFacebookUser(result: Result) {
-    val parameters = Bundle()
-    parameters.putString("fields", "id,name")
-    GraphRequest(
-            AccessToken.getCurrentAccessToken(),
-            "/me",
-            parameters,
-            HttpMethod.GET
-    ) { response ->
-      val obj = response.jsonObject
-      val map = HashMap<String, String>()
-      map["id"] = obj.getString("id")
-      map["name"] = obj.getString("name")
-      result.success(map)
-    }.executeAsync()
+    if( AccessToken.getCurrentAccessToken() != null ) {
+      val parameters = Bundle()
+      parameters.putString("fields", "id,name")
+      GraphRequest(
+              AccessToken.getCurrentAccessToken(),
+              "/me",
+              parameters,
+              HttpMethod.GET
+      ) { response ->
+        val obj = response.jsonObject
+        val map = HashMap<String, String>()
+        map["id"] = obj.getString("id")
+        map["name"] = obj.getString("name")
+        result.success(map)
+      }.executeAsync()
+    }
   }
 
   private fun getFacebookUserPages(result: Result) {
-    val profile = Profile.getCurrentProfile()
-    val parameters = Bundle()
-    parameters.putString("fields", "id,name,access_token")
-    GraphRequest(
-            AccessToken.getCurrentAccessToken(),
-            "/" + profile.id + "/accounts",
-            parameters,
-            HttpMethod.GET
-    ) { response ->
-      val arr = response.jsonObject.get("data") as JSONArray
-      val list = List(arr.length()) {
-        val map = HashMap<String, String>()
-        val obj = arr.getJSONObject(it)
-        map["id"] = obj.getString("id")
-        map["name"] = obj.getString("name")
-        map["access_token"] = obj.getString("access_token")
-        map
-      }
-      result.success(list)
-    }.executeAsync()
+    if( AccessToken.getCurrentAccessToken() != null ) {
+      val profile = Profile.getCurrentProfile()
+      val parameters = Bundle()
+      parameters.putString("fields", "id,name,access_token")
+      GraphRequest(
+              AccessToken.getCurrentAccessToken(),
+              "/" + profile.id + "/accounts",
+              parameters,
+              HttpMethod.GET
+      ) { response ->
+        val arr = response.jsonObject.get("data") as JSONArray
+        val list = List(arr.length()) {
+          val map = HashMap<String, String>()
+          val obj = arr.getJSONObject(it)
+          map["id"] = obj.getString("id")
+          map["name"] = obj.getString("name")
+          map["access_token"] = obj.getString("access_token")
+          map
+        }
+        result.success(list)
+      }.executeAsync()
+    }
   }
 
-  private fun shareOnFacebookPage(url: String?, message: String, accessToken: String, time: Any?,
+  private fun shareOnFacebookPage(url: String?, message: String, accessToken: String, time: Long?,
                                   facebookId: String, result: Result) {
     val parameters = Bundle()
     if( url != null ) {
@@ -167,13 +175,17 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
     parameters.putString("message", message)
     parameters.putString("access_token", accessToken)
     if( time != null ) {
-      time as Long
       parameters.putLong("scheduled_publish_time", time)
       parameters.putBoolean("published", false)
     }
-    val graphPath = "$facebookId/photos"
+
+    val partPath = if( url != null ) "photos" else "feed"
+    val graphPath = "$facebookId/$partPath"
+
+    val localAccessToken = AccessToken.getCurrentAccessToken()
     val gr = GraphRequest(
-            AccessToken.getCurrentAccessToken(),
+            AccessToken(accessToken, localAccessToken.applicationId, localAccessToken.userId,
+                    null, null, null, null, null, null, null),
             graphPath,
             parameters,
             HttpMethod.POST
@@ -186,17 +198,23 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
     gr.executeAsync()
   }
 
-  private fun shareOnFacebookProfile(urlImage: String?, result: Result) {
-    val url = URL(urlImage)
-
+  private fun shareOnFacebookProfile(urlImage: String?, message: String?, result: Result) {
     Thread {
-      val image = BitmapFactory.decodeStream(url.openConnection().getInputStream())
+      var image: Bitmap? = null
+      if( urlImage != null ) {
+        val url = URL(urlImage)
+        image = BitmapFactory.decodeStream(url.openConnection().getInputStream())
+      }
 
       activity.runOnUiThread {
-        val photo = SharePhoto.Builder().setBitmap(image).build()
-        val content = SharePhotoContent.Builder().addPhoto(photo).build()
-        val shareDialog = ShareDialog(activity)
+        var content = if( image != null ) {
+          val photo = SharePhoto.Builder().setBitmap(image).build()
+          SharePhotoContent.Builder().addPhoto(photo).build()
+        } else {
+          ShareLinkContent.Builder().setQuote(message).build()
+        }
 
+        val shareDialog = ShareDialog(activity)
         if (ShareDialog.canShow(SharePhotoContent::class.java)) {
           shareDialog.show(content)
         } else result.error("APP_NOT_FOUND", "Facebook app not found", null)
