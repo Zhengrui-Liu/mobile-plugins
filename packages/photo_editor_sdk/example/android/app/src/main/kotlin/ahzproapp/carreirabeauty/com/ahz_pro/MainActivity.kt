@@ -1,4 +1,4 @@
-package com.ahazou.photo_editor_sdk_example
+package ahzproapp.carreirabeauty.com.ahz_pro
 
 import android.os.Bundle
 

@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-//import 'package:image_downloader/image_downloader.dart';
 
 import 'package:photo_editor_sdk/photo_editor_sdk.dart';
 
@@ -18,7 +17,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _openEditor();
+    // _openEditor();
   }
 
   _openEditor() async {

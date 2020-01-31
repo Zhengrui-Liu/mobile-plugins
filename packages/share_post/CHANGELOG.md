@@ -1,3 +1,7 @@
+## 0.4.9
+
+* Share content without url image
+
 ## 0.4.8
 
 * Fix Swift null-safe 
