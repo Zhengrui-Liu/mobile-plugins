@@ -4,10 +4,10 @@ import PhotoEditorSDK
 
 @available(iOS 9.0, *)
 public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewControllerDelegate {
-    
+
     var controller: UIViewController!
     var globalResult: FlutterResult!
-    
+
     public static func register(with registrar: FlutterPluginRegistrar) {
         if let licenseURL = Bundle.main.url(forResource: "license", withExtension: "") {
             PESDK.unlockWithLicense(at: licenseURL)
@@ -17,7 +17,7 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
         let instance = SwiftPhotoEditorSdkPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
-    
+
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         if( call.method == "addAllContents" ) {
             if let args = call.arguments as? Dictionary<String, Array<String>> {
@@ -26,7 +26,7 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
             }
         } else if (call.method == "editImage") {
             setUpStickers()
-            
+
             controller = UIApplication.shared.keyWindow?.rootViewController
             globalResult = result
             let args = call.arguments as! String
@@ -46,36 +46,36 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
             self.controller.present(self.createPhotoEditViewController(with: photo), animated: true, completion: nil)
         }
     }
-    
+
     private func createPhotoEditViewController(with photo: Photo, and photoEditModel: PhotoEditModel = PhotoEditModel()) -> PhotoEditViewController {
         let configuration = buildConfiguration()
-        
+
         // Create a photo edit view controller
         let photoEditViewController = PhotoEditViewController(photoAsset: photo, configuration: configuration, photoEditModel: photoEditModel)
-        
+
         photoEditViewController.toolbar.backgroundColor = UIColor.white
         photoEditViewController.toolbar.tintColor = UIColor.black
         photoEditViewController.view.tintColor = UIColor.black
         //        photoEditViewController.toolbarItems?.forEach { i in
         //            i.color = UIColor.black
         //        }
-        
+
         photoEditViewController.modalPresentationStyle = .fullScreen
         photoEditViewController.delegate = self
-        
+
         return photoEditViewController
     }
-    
+
     public func photoEditViewController(_ photoEditViewController: PhotoEditViewController, didSave image: UIImage, and data: Data) {
         if let navigationController = photoEditViewController.navigationController {
             navigationController.popViewController(animated: true)
         } else {
             globalResult(data)
-            
+
             controller.dismiss(animated: true, completion: nil)
         }
     }
-    
+
     public func photoEditViewControllerDidFailToGeneratePhoto(_ photoEditViewController: PhotoEditViewController) {
         if let navigationController = photoEditViewController.navigationController {
             navigationController.popViewController(animated: true)
@@ -83,7 +83,7 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
             controller.dismiss(animated: true, completion: nil)
         }
     }
-    
+
     public func photoEditViewControllerDidCancel(_ photoEditViewController: PhotoEditViewController) {
         if let navigationController = photoEditViewController.navigationController {
             navigationController.popViewController(animated: true)
@@ -91,7 +91,7 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
             controller.dismiss(animated: true, completion: nil)
         }
     }
-    
+
     func createDefaultItems() -> [PhotoEditMenuItem] {
         let logo = PhotoEditMenuItem.tool(
             ToolMenuItem(
@@ -101,39 +101,39 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
         )
         let sticker = PhotoEditMenuItem.tool(ToolMenuItem(title: "adesivo", icon: UIImage(named: "imgly_icon_tool_sticker_48pt", in: Bundle.imglyBundle, compatibleWith: nil)!, toolControllerClass: StickerToolController.self)!)
         let text = PhotoEditMenuItem.tool(ToolMenuItem(title: "texto", icon: UIImage(named: "imgly_icon_tool_text_48pt", in: Bundle.imglyBundle, compatibleWith: nil)!, toolControllerClass: TextToolController.self)!)
-        
+
         return [logo, sticker, text]
     }
-    
+
     private func buildConfiguration() -> Configuration {
         let configuration = Configuration { builder in
             // Configure editor
             builder.configurePhotoEditViewController { options in
                 options.menuItems = createDefaultItems()
-                
+
                 //options.backgroundColor = UIColor.white
                 options.actionButtonConfigurationClosure = { cell, action in
                     cell.contentTintColor = UIColor(red: 121/255, green: 0, blue: 173/255, alpha: 1)
                 }
-                
+
 //                options.applyButtonConfigurationClosure = { shareButton in
 //                    shareButton.setImage(UIImage(named: "Share"), for: .normal)
 //                }
             }
-            
+
             // Configure sticker tool
             builder.configureStickerToolController { options in
                 // Enable personal stickers
                 options.personalStickersEnabled = true
             }
-            
+
             // Configure theme
             builder.theme = self.theme
         }
-        
+
         return configuration
     }
-    
+
     fileprivate static func translate() {
         PESDK.localizationDictionary = [
             "pt": [
@@ -195,19 +195,19 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
             ]
         ]
     }
-    
+
     fileprivate func setUpStickers() {
-        
+
         // MARK: Shapes
         if let last = StickerCategory.all.last {
             let shapes = StickerCategory(title: "Formas", imageURL: last.imageURL, stickers: last.stickers)
             StickerCategory.all.removeAll()
             StickerCategory.all.append(shapes)
         }
-        
+
         // MARK: User logo & Facebook photos
         var images: [Sticker] = []
-        
+
         //        if let userOldLogo = userInfo!["logo_image_url"] as? String {
         //            if let logoStickerURL = URL(string: userOldLogo) {
         //                let logoSticker = Sticker(imageURL: logoStickerURL, thumbnailURL: nil, identifier: "UserLogo")
@@ -215,7 +215,7 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
         //            }
         //        }
         //
-        
+
         let defaults = UserDefaults.standard
         let logos = defaults.array(forKey: "logos")
         var cont = 0
@@ -226,12 +226,12 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
                 images.append(logoSticker)
             }
         }
-        
+
         if !images.isEmpty {
-            
+
             let logoStickerCategory = URL(string: "http://is3.mzstatic.com/image/thumb/Purple118/v4/f3/31/b8/f331b8c5-d637-d9d7-7466-d1eb79c70c3f/source/175x175bb.jpg")!
             let stickerCategory = StickerCategory(title: "Logo", imageURL: logoStickerCategory, stickers: images)
-            
+
             if !StickerCategory.all.contains(where: { (stickerCategory) -> Bool in
                 if stickerCategory.title == "logo" {
                     return true
@@ -241,12 +241,12 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
                 StickerCategory.all.insert(stickerCategory, at: 0)
             }
         }
-        
+
     }
-    
+
     private static let defaultTheme: Theme = {
         return .light
     }()
-    
+
     private var theme = defaultTheme
 }

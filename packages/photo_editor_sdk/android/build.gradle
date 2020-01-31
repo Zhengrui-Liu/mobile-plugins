@@ -10,9 +10,9 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.3'
-        classpath 'ly.img.android.pesdk:plugin:7.1.8'
+        classpath 'com.android.tools.build:gradle:3.5.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'ly.img.android.pesdk:plugin:7.1.8'
     }
 }
 
@@ -20,26 +20,26 @@ rootProject.allprojects {
     repositories {
         google()
         jcenter()
+        maven { url 'https://artifactory.img.ly/artifactory/imgly' }
     }
 }
 
 apply plugin: 'com.android.library'
-// Apply the PESDKPlugin
-apply plugin: 'ly.img.android.sdk'
 apply plugin: 'kotlin-android'
-
+apply plugin: 'ly.img.android.sdk'
 
 // Configure the PESDKPlugin
 imglyConfig {
 
     pesdk {
         enabled true
-        licencePath "LICENSE" // Name of the Licence file in the asset folder
+        licencePath 'LICENSE'
     }
 
     // Define the modules you are need
     modules {
         // Add all the UI modules you are need
+        include 'ui:core'
         include 'ui:text'
         include 'ui:focus'
         include 'ui:frame'
@@ -67,7 +67,7 @@ imglyConfig {
 }
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 28
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
@@ -78,10 +78,6 @@ android {
     }
     lintOptions {
         disable 'InvalidPackage'
-    }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 

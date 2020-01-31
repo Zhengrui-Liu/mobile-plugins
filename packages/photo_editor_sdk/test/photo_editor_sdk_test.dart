@@ -5,6 +5,8 @@ import 'package:photo_editor_sdk/photo_editor_sdk.dart';
 void main() {
   const MethodChannel channel = MethodChannel('photo_editor_sdk');
 
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   setUp(() {
     channel.setMockMethodCallHandler((MethodCall methodCall) async {
       return '42';

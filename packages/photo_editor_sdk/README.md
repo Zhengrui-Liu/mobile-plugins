@@ -1,6 +1,6 @@
 # photo_editor_sdk
 
-A Flutter PhotoEditor plugin.
+A new Flutter project.
 
 ## Getting Started
 
