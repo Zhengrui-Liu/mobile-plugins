@@ -197,16 +197,15 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
     }
 
     fileprivate func setUpStickers() {
-
-        // MARK: Shapes
         if let last = StickerCategory.all.last {
             let shapes = StickerCategory(title: "Formas", imageURL: last.imageURL, stickers: last.stickers)
             StickerCategory.all.removeAll()
             StickerCategory.all.append(shapes)
         }
-
+        createStickerSection(key: "logos", name: "Logo", index: 0)
+        createStickerSection(key: "stickers", name: "Adesivos", index: 1)
+        
         // MARK: User logo & Facebook photos
-        var images: [Sticker] = []
 
         //        if let userOldLogo = userInfo!["logo_image_url"] as? String {
         //            if let logoStickerURL = URL(string: userOldLogo) {
@@ -216,12 +215,17 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
         //        }
         //
 
+    }
+    
+    private func createStickerSection(key: String, name: String, index: Int) {
+        
+        var images: [Sticker] = []
         let defaults = UserDefaults.standard
-        let logos = defaults.array(forKey: "logos")
+        let logos = defaults.array(forKey: key)
         var cont = 0
         logos?.forEach { logo in
             if let logoURL = URL(string: logo as! String) {
-                let logoSticker = Sticker(imageURL: logoURL, thumbnailURL: nil, identifier: "\(cont)")
+                let logoSticker = Sticker(imageURL: logoURL, thumbnailURL: nil, identifier: "\(cont) \(index)")
                 cont = cont+1
                 images.append(logoSticker)
             }
@@ -230,18 +234,17 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
         if !images.isEmpty {
 
             let logoStickerCategory = URL(string: "http://is3.mzstatic.com/image/thumb/Purple118/v4/f3/31/b8/f331b8c5-d637-d9d7-7466-d1eb79c70c3f/source/175x175bb.jpg")!
-            let stickerCategory = StickerCategory(title: "Logo", imageURL: logoStickerCategory, stickers: images)
+            let stickerCategory = StickerCategory(title: name, imageURL: logoStickerCategory, stickers: images)
 
-            if !StickerCategory.all.contains(where: { (stickerCategory) -> Bool in
-                if stickerCategory.title == "logo" {
-                    return true
-                }
-                return false
-            }) {
-                StickerCategory.all.insert(stickerCategory, at: 0)
-            }
+//            if !StickerCategory.all.contains(where: { (stickerCategory) -> Bool in
+//                if stickerCategory.title == key {
+//                    return true
+//                }
+//                return false
+//            }) {
+                StickerCategory.all.insert(stickerCategory, at: index)
+//            }
         }
-
     }
 
     private static let defaultTheme: Theme = {
