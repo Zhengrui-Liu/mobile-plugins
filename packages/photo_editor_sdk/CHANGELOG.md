@@ -1,3 +1,7 @@
+## 0.2.4
+
+* Empty menu items for Stickers on ios
+
 ## 0.2.3
 
 * Stickers ios added

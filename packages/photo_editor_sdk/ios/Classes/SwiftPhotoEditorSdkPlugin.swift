@@ -193,9 +193,13 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
     }
 
     fileprivate func setUpStickers() {
-        StickerCategory.all.removeAll()
-        createStickerSection(key: "logos", name: "Logo", index: 0)
-        createStickerSection(key: "stickers", name: "Adesivos", index: 1)
+        if let last = StickerCategory.all.last {
+            let shapes = StickerCategory(title: "Formas", imageURL: last.imageURL, stickers: last.stickers)
+            StickerCategory.all.removeAll()
+            StickerCategory.all.append(shapes)
+        }
+        createStickerSection(key: "logos", name: "Logos", index: 1)
+        createStickerSection(key: "stickers", name: "Adesivos", index: 2)
     }
     
     private func createStickerSection(key: String, name: String, index: Int) {
@@ -215,7 +219,7 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
         if !images.isEmpty {
             if let last = images.last {
                 let stickerCategory = StickerCategory(title: name, imageURL: last.imageURL, stickers: images)
-                StickerCategory.all.insert(stickerCategory, at: index)
+                StickerCategory.all.insert(stickerCategory, at: StickerCategory.all.count)
             }
         }
     }
