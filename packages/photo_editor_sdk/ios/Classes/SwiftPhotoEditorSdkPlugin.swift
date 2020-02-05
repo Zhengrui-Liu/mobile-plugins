@@ -93,16 +93,16 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
     }
 
     func createDefaultItems() -> [PhotoEditMenuItem] {
-        let logo = PhotoEditMenuItem.tool(
+        let adesivos = PhotoEditMenuItem.tool(
             ToolMenuItem(
-                title: "sua logo",
+                title: "adesivos",
                 icon: UIImage(named: "imgly_icon_tool_sticker_48pt", in: Bundle.imglyBundle, compatibleWith: nil)!,
                 toolControllerClass: StickerToolController.self)!
         )
-        let sticker = PhotoEditMenuItem.tool(ToolMenuItem(title: "adesivo", icon: UIImage(named: "imgly_icon_tool_sticker_48pt", in: Bundle.imglyBundle, compatibleWith: nil)!, toolControllerClass: StickerToolController.self)!)
+        // let sticker = PhotoEditMenuItem.tool(ToolMenuItem(title: "adesivo", icon: UIImage(named: "imgly_icon_tool_sticker_48pt", in: Bundle.imglyBundle, compatibleWith: nil)!, toolControllerClass: StickerToolController.self)!)
         let text = PhotoEditMenuItem.tool(ToolMenuItem(title: "texto", icon: UIImage(named: "imgly_icon_tool_text_48pt", in: Bundle.imglyBundle, compatibleWith: nil)!, toolControllerClass: TextToolController.self)!)
 
-        return [logo, sticker, text]
+        return [adesivos, text]
     }
 
     private func buildConfiguration() -> Configuration {
@@ -115,16 +115,12 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
                 options.actionButtonConfigurationClosure = { cell, action in
                     cell.contentTintColor = UIColor(red: 121/255, green: 0, blue: 173/255, alpha: 1)
                 }
-
-//                options.applyButtonConfigurationClosure = { shareButton in
-//                    shareButton.setImage(UIImage(named: "Share"), for: .normal)
-//                }
             }
 
             // Configure sticker tool
             builder.configureStickerToolController { options in
                 // Enable personal stickers
-                options.personalStickersEnabled = true
+                options.personalStickersEnabled = false
             }
 
             // Configure theme
@@ -197,24 +193,9 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
     }
 
     fileprivate func setUpStickers() {
-        if let last = StickerCategory.all.last {
-            let shapes = StickerCategory(title: "Formas", imageURL: last.imageURL, stickers: last.stickers)
-            StickerCategory.all.removeAll()
-            StickerCategory.all.append(shapes)
-        }
+        StickerCategory.all.removeAll()
         createStickerSection(key: "logos", name: "Logo", index: 0)
         createStickerSection(key: "stickers", name: "Adesivos", index: 1)
-        
-        // MARK: User logo & Facebook photos
-
-        //        if let userOldLogo = userInfo!["logo_image_url"] as? String {
-        //            if let logoStickerURL = URL(string: userOldLogo) {
-        //                let logoSticker = Sticker(imageURL: logoStickerURL, thumbnailURL: nil, identifier: "UserLogo")
-        //                images.append(logoSticker)
-        //            }
-        //        }
-        //
-
     }
     
     private func createStickerSection(key: String, name: String, index: Int) {
@@ -230,20 +211,12 @@ public class SwiftPhotoEditorSdkPlugin: NSObject, FlutterPlugin, PhotoEditViewCo
                 images.append(logoSticker)
             }
         }
-
+        
         if !images.isEmpty {
-
-            let logoStickerCategory = URL(string: "http://is3.mzstatic.com/image/thumb/Purple118/v4/f3/31/b8/f331b8c5-d637-d9d7-7466-d1eb79c70c3f/source/175x175bb.jpg")!
-            let stickerCategory = StickerCategory(title: name, imageURL: logoStickerCategory, stickers: images)
-
-//            if !StickerCategory.all.contains(where: { (stickerCategory) -> Bool in
-//                if stickerCategory.title == key {
-//                    return true
-//                }
-//                return false
-//            }) {
+            if let last = images.last {
+                let stickerCategory = StickerCategory(title: name, imageURL: last.imageURL, stickers: images)
                 StickerCategory.all.insert(stickerCategory, at: index)
-//            }
+            }
         }
     }
 

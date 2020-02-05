@@ -12,15 +12,10 @@ import ly.img.android.pesdk.backend.model.state.SaveSettings
 import ly.img.android.pesdk.backend.model.constant.Directory.DCIM
 import ly.img.android.pesdk.assets.sticker.shapes.StickerPackShapes
 import ly.img.android.pesdk.assets.sticker.emoticons.StickerPackEmoticons
-import ly.img.android.pesdk.ui.model.state.UiConfigSticker
 import ly.img.android.pesdk.assets.overlay.basic.OverlayPackBasic
-import ly.img.android.pesdk.ui.model.state.UiConfigOverlay
 import ly.img.android.pesdk.assets.frame.basic.FramePackBasic
-import ly.img.android.pesdk.ui.model.state.UiConfigFrame
 import ly.img.android.pesdk.assets.font.basic.FontPackBasic
-import ly.img.android.pesdk.ui.model.state.UiConfigText
 import ly.img.android.pesdk.assets.filter.basic.FilterPackBasic
-import ly.img.android.pesdk.ui.model.state.UiConfigFilter
 import android.net.Uri
 import com.orhanobut.hawk.Hawk
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -29,8 +24,10 @@ import ly.img.android.pesdk.backend.decoder.ImageSource
 import ly.img.android.pesdk.backend.model.config.ImageStickerAsset
 import ly.img.android.pesdk.backend.model.state.LoadSettings
 import ly.img.android.pesdk.ui.activity.PhotoEditorBuilder
+import ly.img.android.pesdk.ui.model.state.*
 import ly.img.android.pesdk.ui.panels.item.ImageStickerItem
 import ly.img.android.pesdk.ui.panels.item.StickerCategoryItem
+import ly.img.android.pesdk.ui.panels.item.ToolItem
 import java.util.ArrayList
 
 /** PhotoEditorSdkPlugin */
@@ -56,6 +53,9 @@ class PhotoEditorSdkPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
     Hawk.init(activity).build()
   }
 
+  override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+  }
+
   override fun onDetachedFromActivityForConfigChanges() {
   }
 
@@ -76,39 +76,38 @@ class PhotoEditorSdkPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
     }
   }
 
-  override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
-  }
-
   private fun createPesdkSettingsList() =
           PhotoEditorSettingsList()
-                  .configure<UiConfigFilter> {
-                    it.setFilterList(FilterPackBasic.getFilterPack())
-                  }
+//                  .configure<UiConfigFilter> {
+//                    it.setFilterList(FilterPackBasic.getFilterPack())
+//                  }
                   .configure<UiConfigText> {
                     it.setFontList(FontPackBasic.getFontPack())
                   }
-                  .configure<UiConfigFrame> {
-                    it.setFrameList(FramePackBasic.getFramePack())
-                  }
-                  .configure<UiConfigOverlay> {
-                    it.setOverlayList(OverlayPackBasic.getOverlayPack())
-                  }
-                  .configure<UiConfigSticker> {
-                    it.setStickerLists(
-                            StickerPackEmoticons.getStickerCategory(),
-                            StickerPackShapes.getStickerCategory(),
-                            StickerCategoryItem(
-                              "hue", "", ImageSource.create(R.drawable.imgly_sticker_emoticons_alien),
-                                    ImageStickerItem("imgly_sticker_emoticons_grin", ly.img.android.pesdk.assets.sticker.emoticons.R.string.imgly_sticker_name_emoticons_grin, ImageSource.create(ly.img.android.pesdk.assets.sticker.emoticons.R.drawable.imgly_sticker_emoticons_grin))
-                            )
-                    )
-                  }
-                  .configure<SaveSettings> {
-                    // Set custom editor image export settings
-                    it.setExportDir(DCIM, "SomeFolderName")
-                    it.setExportPrefix("result_")
-                    it.savePolicy = SaveSettings.SavePolicy.RETURN_ALWAYS_ONLY_OUTPUT
-                  }
+//                  .configure<UiConfigFrame> {
+//                    it.setFrameList(FramePackBasic.getFramePack())
+//                  }
+//                  .configure<UiConfigOverlay> {
+//                    it.setOverlayList(OverlayPackBasic.getOverlayPack())
+//                  }
+//                  .configure<UiConfigSticker> {
+//                    it.setStickerLists(
+//                            StickerCategoryItem(
+//                                    "hue", "", ImageSource.create(R.drawable.imgly_sticker_emoticons_alien),
+//                                    ImageStickerItem(
+//                                            "imgly_sticker_emoticons_grin",
+//                                            ly.img.android.pesdk.assets.sticker.emoticons.R.string.imgly_sticker_name_emoticons_grin,
+//                                            ImageSource.create(ly.img.android.pesdk.assets.sticker.emoticons.R.drawable.imgly_sticker_emoticons_grin)
+//                                    )
+//                            )
+//                    )
+//                  }
+//                  .configure<SaveSettings> {
+//                    // Set custom editor image export settings
+//                    it.setExportDir(DCIM, "SomeFolderName")
+//                    it.setExportPrefix("result_")
+//                    it.savePolicy = SaveSettings.SavePolicy.RETURN_ALWAYS_ONLY_OUTPUT
+//                  }
 
 
   var PESDK_RESULT = 1
@@ -123,6 +122,15 @@ class PhotoEditorSdkPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
     }
 
     settingsList[LoadSettings::class].source = inputImage
+    settingsList[UiConfigMainMenu::class.java].apply {
+      // Set the tools you want keep sure you licence is cover the feature and do not forget to include the correct modules in your build.gradle
+      setToolList(
+              ToolItem("imgly_tool_sticker_selection", R.string.pesdk_sticker_title_name, ImageSource.create(R.drawable.imgly_icon_tool_sticker)),
+              ToolItem("imgly_tool_text", R.string.pesdk_text_title_name, ImageSource.create(R.drawable.imgly_icon_tool_text))
+      )
+    }
+
+    settingsList[UiConfigTheme::class.java].theme = R.style.Imgly_Theme_TopActionBar_NoFullscreen
 
     PhotoEditorBuilder(activity)
             .setSettingsList(settingsList)

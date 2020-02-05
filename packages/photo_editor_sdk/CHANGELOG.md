@@ -1,3 +1,7 @@
+## 0.2.3
+
+* Stickers ios added
+
 ## 0.2.2
 
 * Bug fixed
