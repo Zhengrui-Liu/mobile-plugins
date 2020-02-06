@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pesdk_text_title_name">texto</string>
+    <string name="pesdk_text_title_options">opções de texto</string>
+    <string name="pesdk_text_title_textColor">cor do texto</string>
+    <string name="pesdk_text_title_font">fonte</string>
+
+    <string name="pesdk_text_button_add">adicionar</string>
+    <string name="pesdk_text_button_edit">editar</string>
+
+    <string name="pesdk_text_button_font">fonte</string>
+    <string name="pesdk_text_button_color">cor</string>
+    <string name="pesdk_text_button_backgroundColor">cor de fundo</string>
+    <string name="pesdk_text_button_alignment">alinhar</string>
+
+    <string name="pesdk_text_button_flipV">@string/pesdk_common_button_flipV</string>
+    <string name="pesdk_text_button_flipH">@string/pesdk_common_button_flipH</string>
+    <string name="pesdk_text_button_bringToFront">pra frente</string>
+    <string name="pesdk_text_button_delete">apagar</string>
+
+    <string name="pesdk_text_text_editTextPlaceholder">seu texto</string>
+</resources>

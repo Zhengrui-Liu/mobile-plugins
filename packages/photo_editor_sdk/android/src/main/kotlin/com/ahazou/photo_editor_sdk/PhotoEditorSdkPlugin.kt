@@ -22,9 +22,11 @@ import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import ly.img.android.pesdk.backend.decoder.ImageSource
 import ly.img.android.pesdk.backend.model.config.ImageStickerAsset
+import ly.img.android.pesdk.backend.model.state.ColorAdjustmentSettings
 import ly.img.android.pesdk.backend.model.state.LoadSettings
 import ly.img.android.pesdk.ui.activity.PhotoEditorBuilder
 import ly.img.android.pesdk.ui.model.state.*
+import ly.img.android.pesdk.ui.panels.item.ColorItem
 import ly.img.android.pesdk.ui.panels.item.ImageStickerItem
 import ly.img.android.pesdk.ui.panels.item.StickerCategoryItem
 import ly.img.android.pesdk.ui.panels.item.ToolItem
@@ -84,6 +86,8 @@ class PhotoEditorSdkPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
                   .configure<UiConfigText> {
                     it.setFontList(FontPackBasic.getFontPack())
                   }
+
+
 //                  .configure<UiConfigFrame> {
 //                    it.setFrameList(FramePackBasic.getFramePack())
 //                  }
@@ -116,22 +120,18 @@ class PhotoEditorSdkPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
     val a = Hawk.get<ArrayList<String>>("logos")
 
     val settingsList = createPesdkSettingsList()
-
     settingsList.configure<LoadSettings> {
       it.source = inputImage
     }
-
-    settingsList[LoadSettings::class].source = inputImage
-    settingsList[UiConfigMainMenu::class.java].apply {
-      // Set the tools you want keep sure you licence is cover the feature and do not forget to include the correct modules in your build.gradle
-      setToolList(
+    settingsList.configure<UiConfigTheme> {
+      it.theme =  R.style.Imgly_Theme_TopActionBar_NoFullscreen
+    }
+    settingsList.configure<UiConfigMainMenu> {
+      it.setToolList(
               ToolItem("imgly_tool_sticker_selection", R.string.pesdk_sticker_title_name, ImageSource.create(R.drawable.imgly_icon_tool_sticker)),
               ToolItem("imgly_tool_text", R.string.pesdk_text_title_name, ImageSource.create(R.drawable.imgly_icon_tool_text))
       )
     }
-
-    settingsList[UiConfigTheme::class.java].theme = R.style.Imgly_Theme_TopActionBar_NoFullscreen
-
     PhotoEditorBuilder(activity)
             .setSettingsList(settingsList)
             .startActivityForResult(activity, PESDK_RESULT)
