@@ -328,6 +328,7 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
       val accessToken = AccessToken.getCurrentAccessToken()
       result.success(accessToken.permissions.contains("publish_pages") &&
               accessToken.permissions.contains("manage_pages"))
+      return
     }
     result.success(false)
   }

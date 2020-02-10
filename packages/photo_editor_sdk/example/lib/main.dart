@@ -17,10 +17,10 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _openEditor();
+    _loadEditor();
   }
 
-  _openEditor() async {
+  _loadEditor() async {
 
 
     PhotoEditorSdk.addAllContents(
@@ -35,10 +35,6 @@ class _MyAppState extends State<MyApp> {
           "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcSS0zCE8uqmkD1DaSLuaXxYpJSuatSOyWdkaFhafZe-z8RKC6Kk",
         ]
     );
-
-    PhotoEditorSdk.editImage("https://images.carreirabeauty.com/uploads/feed/file/586bb563993a7a09230f8431/ahazou.jpg").then((r) {
-
-    });
   }
 
   @override
@@ -49,7 +45,15 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Plugin example app'),
         ),
         body: Center(
-          child: Text('Running on: $_platformVersion\n'),
+          child: RaisedButton(
+            child: Text('Open editor'),
+            onPressed: () {
+              PhotoEditorSdk.editImage("https://images.carreirabeauty.com/"
+                  "uploads/feed/file/586bb563993a7a09230f8431/ahazou.jpg").then((r) {
+
+              });
+            },
+          ),
         ),
       ),
     );

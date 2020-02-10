@@ -52,7 +52,6 @@ imglyConfig {
         include 'ui:adjustment'
         include 'ui:text-design'
 
-
         // Add the serializer if you need
         include 'backend:serializer'
 
@@ -84,4 +83,6 @@ android {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation "com.orhanobut:hawk:2.0.1"
+    implementation 'com.github.bumptech.glide:glide:4.11.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
 }

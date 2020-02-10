@@ -1,3 +1,7 @@
+## 0.4.10
+
+* Missing return method
+
 ## 0.4.9
 
 * Share content without url image
