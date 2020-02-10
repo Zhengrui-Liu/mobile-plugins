@@ -1,3 +1,7 @@
+## 0.2.5
+
+* Android editor partial implement
+
 ## 0.2.4
 
 * Empty menu items for Stickers on ios

@@ -1,6 +1,6 @@
 name: photo_editor_sdk
 description: A Flutter PhotoEditor plugin.
-version: 0.2.4
+version: 0.2.5
 author: Ahazou Team <marcos@ahazou.com>
 homepage: https://github.com/ahazou/mobile-plugins/tree/master/packages/photo_editor_sdk
 
