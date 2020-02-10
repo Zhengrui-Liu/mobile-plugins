@@ -233,7 +233,7 @@ class SharePostPlugin: ActivityAware, FlutterPlugin, MethodCallHandler {
           val bitmapUri = getImageUri(image)
 
           val storiesIntent = Intent("com.instagram.share.ADD_TO_STORY")
-          storiesIntent.setDataAndType(bitmapUri,  "jpg")
+          storiesIntent.setDataAndType(bitmapUri, activity.contentResolver.getType(bitmapUri))
           storiesIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 
           activity.startActivity(storiesIntent)

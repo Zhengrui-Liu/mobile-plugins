@@ -1,3 +1,7 @@
+## 0.4.11
+
+* Fix Instagram share to story
+
 ## 0.4.10
 
 * Missing return method

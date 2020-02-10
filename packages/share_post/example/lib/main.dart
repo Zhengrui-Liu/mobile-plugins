@@ -79,9 +79,9 @@ class _MyAppState extends State<MyApp> {
 //    var map = page.first;
 //    var token = map["access_token"];
 
-    SharePost.checkPermissionToPublish();
-
-
+    SharePost.shareOnWhatsappBusiness(
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTYZqQeg5UFJJC6MvvBPkjTJNdnABMY1RZM6e__-K1eiCLIxUVm",
+        "message");
 
 //    await SharePost.shareOnFacebook(
 //        null,
